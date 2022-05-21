@@ -2,7 +2,7 @@ import fs from 'node:fs'
 export default class VastDB extends Map {
     constructor(v) {
         super();
-        this.filename = `${process.cwd()}/db.json`;
+        this.filename = `${process.cwd()}/db/db.json`;
         this.views = v
         if (!fs.existsSync(this.filename)) {
             this.set({
