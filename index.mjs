@@ -4,7 +4,7 @@ import http from 'node:http'
 import fs from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
-
+ 
 const routesfile = resolve('routes.mjs')
 const routesurl = pathToFileURL(routesfile).href
 const indexfile = resolve('index.html')
