@@ -26,8 +26,7 @@ http
       s.endJSON = (o) => s.end(JSON.stringify(o));
       const midware = Object.keys(routes)
         .filter((k) => k.startsWith('_'))
-        .map((k) => routes[k]({ r, s, data, db }));
-      if (midware.includes(true)) return;
+        .find((k) => routes[k]({ r, s, data, db }));
       if (routes[r.url]) return routes[r.url]({ r, s, data, db });
       else s.writeHead(404).end();
     } catch (e) {
