@@ -1,6 +1,6 @@
 {
   "name": "instaserve",
-  "version": "0.0.40",
+  "version": "0.0.41",
   "description": "Instant web stack",
   "main": "server.mjs",
   "bin": "./server.mjs"
