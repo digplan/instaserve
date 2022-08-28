@@ -1,7 +1,11 @@
 {
   "name": "instaserve",
-  "version": "0.0.41",
+  "version": "0.0.44",
   "description": "Instant web stack",
   "main": "server.mjs",
-  "bin": "./server.mjs"
+  "bin": "./server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "deno": "deno run --unstable --allow-net --allow-read deno/server.js"
+  }
 }
