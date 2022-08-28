@@ -1,20 +1,22 @@
-const routes = (await import('../routes.mjs')).default
+import { existsSync } from "https://deno.land/std/fs/mod.ts"; 
+import routes from '../routes.mjs'
 console.log(routes)
 
+const s = { end: (str) => new Response(str) }
+
 Deno.serve(async (r) => {
-  let data = ''
-  if(r.method == 'POST') data = await r.text()
-  let u = r.url.replace('http://127.0.0.1:9000', '').split('/')
+  const data = await r.text()
   const midware = Object.keys(routes)
     .filter((k) => k.startsWith('_'))
-    .find((k) => routes[k](r, null, data))
-  if (u == '/') u = '/index.html'
-  const fn = `./public${u.replace('..', '')}`
-  //if (fs.existsSync(fn)) {
-  //  if (fn.match(/sw\.js/)) s.writeHead(200, { 'Content-Type': 'application/javascript' })
- //   return s.end(fs.readFileSync(fn, 'utf-8'))
-  //}
+    .find((k) => routes[k](r, s, data))
+
+  const u = new URL(r.url).pathname.split('/')
+  if (!u[1]) u[1] = 'index.html'
+  const fn = `public/${u[1]}`
   console.log(fn)
-  if (routes[r.url]) return routes[r.url](r, s, data)
-  return routes[u[2]](u, data)
-})
+  if (await existsSync(fn)) {
+    return new Response(await Deno.readTextFile(fn), {headers:{'Content-Type': 'text/html'}})
+  }
+
+  return routes[`/${u[1]}`](r, { end: (str) => new Response(str) }, data)
+}, {port: 3000})

@@ -6,6 +6,7 @@
   "bin": "./server.mjs",
   "scripts": {
     "start": "node server.mjs",
-    "deno": "deno run --unstable --allow-net --allow-read deno/server.js"
+    "deno": "deno run --unstable --allow-net --allow-read deno/server.js",
+    "bun": "bun run bun/http.js"
   }
 }
