@@ -1,12 +1,16 @@
 {
   "name": "instaserve",
-  "version": "0.0.44",
+  "version": "0.1.3",
   "description": "Instant web stack",
-  "main": "server.mjs",
+  "main": "module.mjs",
   "bin": "./server.mjs",
   "scripts": {
     "start": "node server.mjs",
     "deno": "deno run --unstable --allow-net --allow-read deno/server.js",
-    "bun": "bun run bun/http.js"
+    "bun": "bun run bun/http.js",
+    "test": "node --no-warnings test.mjs"
+  },
+  "dependencies": {
+    "instaserve": "^0.1.1"
   }
 }
