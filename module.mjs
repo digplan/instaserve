@@ -10,7 +10,7 @@ export default function (routes = { _debug: ({ method, url }, s) => console.log(
         r.on('end', (x) => {
             try {
                 if (debug) console.log('parsing data: ' + data)
-                data = JSON.parse(data)
+                if(data) data = JSON.parse(data)
                 const midware = Object.keys(routes)
                     .filter((k) => k.startsWith('_'))
                     .find((k) => routes[k](r, s, data))
@@ -20,7 +20,8 @@ export default function (routes = { _debug: ({ method, url }, s) => console.log(
                     if (fn.match(/sw\.js/)) s.writeHead(200, { 'Content-Type': 'application/javascript' })
                     return s.end(fs.readFileSync(fn, 'utf-8'))
                 }
-                if (routes[r.url]) return routes[r.url](r, s, data)
+                const url = '/' + r.url.split('/')[1]
+                if (routes[url]) return routes[url](r, s, data)
                 throw Error(r.url + ' not found')
             } catch (e) {
                 console.log(e)
