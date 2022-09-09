@@ -4,7 +4,6 @@ import server from './module.mjs'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
 import fs from 'node:fs'
-
 const routesfile = resolve('routes.mjs')
 
 if (!fs.existsSync(routesfile)) {

@@ -1,14 +1,12 @@
 import serve from './module.mjs'
-import { get, te } from '../instax/module.mjs'
+import { get, te } from 'instax'
 
 const server = serve({
-    '/api': (r, s, data) => {
-        s.end(data.a.toString())
-    }
-})
+    '/api': (r, s) => s.end('Hello!')
+}, 3001)
 
-const resp = await get('http://localhost:3000/api', {method: 'POST', body: JSON.stringify({a: 1})})
-te(resp, 1)
+const resp = await get('http://localhost:3001/api')
+te(resp, 'Hello!')
 
 te(server.stop(), true)
 console.log('closing server')

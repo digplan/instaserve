@@ -1,6 +1,6 @@
 {
     "name": "instaserve",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "Instant web stack",
     "main": "module.mjs",
     "bin": "./server.mjs",
@@ -11,6 +11,6 @@
         "test": "node --no-warnings test.mjs"
     },
     "dependencies": {
-        "instaserve": "^0.1.1"
+        "instax": "^0.1.2"
     }
 }

@@ -6,10 +6,10 @@ export default function (routes = { _debug: ({ method, url }, s) => console.log(
 
     const server = http.createServer(async (r, s) => {
         let data = ''
-        r.on('data', (s) => (data += s.toString()))
+        r.on('data', (s) => data += s.toString().trim())
         r.on('end', (x) => {
             try {
-                if (debug) console.log('parsing data: ' + data)
+                if (debug) console.log(`parsing data: "${data}"`)
                 if(data) data = JSON.parse(data)
                 const midware = Object.keys(routes)
                     .filter((k) => k.startsWith('_'))
