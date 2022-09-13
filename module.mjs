@@ -21,7 +21,10 @@ export default function (routes = { _debug: ({ method, url }, s) => console.log(
                     return s.end(fs.readFileSync(fn, 'utf-8'))
                 }
                 const url = r.url.split('/')[1]
-                if (routes[url]) return routes[url](r, s, data)
+                if (routes[url]) {
+                    const resp = routes[url](r, s, data)
+                    return s.end(resp)
+                }
                 throw Error(r.url + ' not found')
             } catch (e) {
                 console.log(e)

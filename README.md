@@ -25,7 +25,7 @@ serve({
     _log: (r, s) => console.log(r.method, r.url),
     _example: (r, s) => console.log('returning a falsy value (above) will stop processing'),
 
-    /api: (r, s, body) => s.end('an api response'),
+    api: (r, s, body) => s.end('an api response'),
 
 }, port)  // port is optional (3000)
 ````
@@ -35,6 +35,6 @@ serve({
 export default {
       _debug: ({ method, url }, s, data) => !console.log(method, url, data),
       _example: (r, s, data) => console.log('returning a falsy value (above) will stop the chain'),
-      '/api': (r, s, data) => s.end('an example api response')
+      api: (r, s, data) => s.end('an example api response')
 }
 ````
