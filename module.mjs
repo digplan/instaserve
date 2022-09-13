@@ -20,7 +20,7 @@ export default function (routes = { _debug: ({ method, url }, s) => console.log(
                     if (fn.match(/sw\.js/)) s.writeHead(200, { 'Content-Type': 'application/javascript' })
                     return s.end(fs.readFileSync(fn, 'utf-8'))
                 }
-                const url = '/' + r.url.split('/')[1]
+                const url = r.url.split('/')[1]
                 if (routes[url]) return routes[url](r, s, data)
                 throw Error(r.url + ' not found')
             } catch (e) {
