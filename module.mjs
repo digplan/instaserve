@@ -34,6 +34,7 @@ export default function (routes = { _debug: ({ method, url }, s) => console.log(
     }).listen(port)
 
     return {
+        server: server,
         stop: () => { server.close(); return true }
     }
 

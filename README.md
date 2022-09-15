@@ -3,7 +3,7 @@ Instant web stack
 
 > npx instaserve (node)
 Starts a server in the current directory
-Creates a routes.mjs file if none exists
+Creates an example routes.mjs file if none exists
 Create a public folder and add files for static file serving
 
 > npm run deno (deno)
