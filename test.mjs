@@ -1,11 +1,12 @@
 import serve from './module.mjs'
 import { get, te, tde } from '../instax/module.mjs'
 
+const port = 8080
 const server = serve({
     api: (r, s) => 'Hello!',
     api2: (r, s, data) => JSON.stringify(data)
-}, 8080)
-te(server.port, 8080)
+}, port)
+te(server.port, port)
 
 // Routes
 const resp = await get('http://localhost:8080/api')
@@ -18,14 +19,26 @@ const testhtml = await get('http://localhost:8080/test.html')
 te(testhtml, 'ok')
 te(server.stop(), true)
 
-// Super shorthand
+// Test route returned values
 const db = {}
-const min_server = serve({
-    c: (r, s, data) => db[data.id] = data,
-    r: (r) => db[r.url.split('/').pop()],
-    u: (r, s, data) => db[data.id] ? 'exists!' : db[data.id] = data,
-    d: (r, s, data) => db[data.id] ? delete db[data.id] : 'does not exist!',
-    q: (r, s, data) => JSON.stringify(Array.from(Object.values(db)).filter(eval(`i=>${data}`)))
-})
-serve(min_server)
+const server2 = serve({
+    _: ({url}) => console.log(url),
+    __: ({headers: {host}, method, url}) => console.log(host, method, url),
+    str: () => 'ok',
+    obj: x => ({a: 'ok'}),
+    undef: () => undefined
+}, 8085)
+te(server2.port, 8085)
+te(server2.routes.str(), 'ok')
+
+const return_str = await get('http://localhost:8085/str') 
+te(return_str, 'ok')
+
+const return_obj = await get('http://localhost:8085/obj')
+te(return_obj.a, 'ok')
+
+const return_undefined = await get('http://localhost:8085/undef')
+te(return_undefined, '')
+
+server2.stop()
 console.log('tests complete')

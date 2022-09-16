@@ -30,7 +30,8 @@ export default function (routes, port = 3000) {
                 const url = r.url.split('/')[1]
                 if (routes[url]) {
                     const resp = routes[url](r, s, data)
-                    return s.end(resp)
+                    if(debug) console.log(`route: ${url}, returned: ${resp}`)
+                    return s.end(typeof resp === 'string' ? resp:JSON.stringify(resp))
                 }
                 throw Error(r.url + ' not found')
             } catch (e) {
@@ -41,6 +42,7 @@ export default function (routes, port = 3000) {
     }).listen(port)
 
     return {
+        routes: routes,
         port: port,
         server: server,
         stop: () => { server.close(); return true }
