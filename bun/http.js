@@ -1,6 +1,11 @@
 import {existsSync} from 'fs'
-import routes from '../routes.mjs'
-console.log(routes)
+import { pathToFileURL } from 'node:url'
+import { resolve } from 'node:path'
+const routesfile = resolve(process.env.routes || '../routes.mjs')
+const routesurl = pathToFileURL(routesfile).href
+
+const routes = (await import(routesurl)).default
+const port = process.env.port || 3000
 
 class s {
     end(s) {
@@ -9,7 +14,7 @@ class s {
 }
 
 Bun.serve({
-    port: 3000,
+    port: port,
     async fetch(r) {
 
         let url = new URL(r.url).pathname
@@ -42,4 +47,4 @@ Bun.serve({
     }
 })
 
-console.log('Running on 3000')
+console.log(`Started on: ${port}, using routes: ${Object.keys(routes)}`)

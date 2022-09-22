@@ -1,6 +1,8 @@
 import { existsSync } from "https://deno.land/std/fs/mod.ts"; 
-import routes from '../routes.mjs'
-console.log(routes)
+
+const routesfile = Deno.env.get('routes') || '../routes.mjs'
+const port = Deno.env.get('port') || 3000
+const routes = (await import(routesfile)).default
 
 class s {
   end(s) {
@@ -32,4 +34,6 @@ Deno.serve(async (r) => {
 
   return new Response('', { status: 404 })
 
-}, {port: 3000})
+}, {port: port})
+
+console.log(`routes: ${Object.keys(routes)}`)
