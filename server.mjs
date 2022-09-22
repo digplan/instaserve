@@ -4,7 +4,7 @@ import server from './module.mjs'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
 import fs from 'node:fs'
-const routesfile = resolve('routes.mjs')
+const routesfile = resolve(process.env.routes || 'routes.mjs')
 
 if (!fs.existsSync(routesfile)) {
   fs.writeFileSync(routesfile, `export default {
@@ -15,6 +15,6 @@ if (!fs.existsSync(routesfile)) {
 }
 
 const routesurl = pathToFileURL(routesfile).href
-console.log(routesfile, routesurl)
+console.log(routesurl)
 const routes = (await import(routesurl)).default
-server(routes)
+server(routes, process.env.port)
