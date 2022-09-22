@@ -41,7 +41,7 @@ export default function (routes, port = 3000) {
         })
     }).listen(process.env.port || port)
 
-    console.log('started on ' + (process.env.port || port))
+    console.log('started on: ' + (process.env.port || port) + ', using routes: ' + Object.keys(routes))
     
     return {
         routes: routes,

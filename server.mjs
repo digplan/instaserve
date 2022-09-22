@@ -16,6 +16,5 @@ if (cmd === 'create' && !fs.existsSync(routesfile)) {
 }
 
 const routesurl = pathToFileURL(routesfile).href
-console.log(routesurl)
 const routes = (await import(routesurl)).default
 server(routes, process.env.port)
