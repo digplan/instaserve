@@ -39,8 +39,10 @@ export default function (routes, port = 3000) {
                 s.writeHead(404).end()
             }
         })
-    }).listen(port)
+    }).listen(process.env.port || port)
 
+    console.log('started on ' + (process.env.port || port))
+    
     return {
         routes: routes,
         port: port,
