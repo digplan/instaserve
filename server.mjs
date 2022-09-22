@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/local/bin/node
 
 import server from './module.mjs'
 import { pathToFileURL } from 'node:url'
