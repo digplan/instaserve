@@ -5,8 +5,9 @@ import { pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
 import fs from 'node:fs'
 const routesfile = resolve(process.env.routes || 'routes.mjs')
+const [npx, instaserve, cmd] = process.argv
 
-if (!fs.existsSync(routesfile)) {
+if (cmd === 'create' && !fs.existsSync(routesfile)) {
   fs.writeFileSync(routesfile, `export default {
         _debug: ({method, url}, s) => !console.log(method, url),
         _example: (r, s) => console.log('returning a falsy value (above) will stop the chain'),
