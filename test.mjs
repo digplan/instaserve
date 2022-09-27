@@ -26,7 +26,8 @@ const server2 = serve({
     __: ({headers: {host}, method, url}) => console.log(host, method, url),
     str: () => 'ok',
     obj: x => ({a: 'ok'}),
-    undef: () => undefined
+    undef: () => undefined,
+    testerror: () => { throw new Error('this from testerror')}
 }, 8085)
 te(server2.port, 8085)
 te(server2.routes.str(), 'ok')
@@ -39,6 +40,9 @@ te(return_obj.a, 'ok')
 
 const return_undefined = await get('http://localhost:8085/undef')
 te(return_undefined, '')
+
+const test_error = await get('http://localhost:8085/testerror')
+te(test_error.error, 'this from testerror')
 
 server2.stop()
 console.log('tests complete')

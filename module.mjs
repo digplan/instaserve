@@ -35,8 +35,9 @@ export default function (routes, port = 3000) {
                 }
                 throw Error(r.url + ' not found')
             } catch (e) {
-                console.log(e)
-                s.writeHead(404).end()
+                const err = JSON.stringify({error: e.message})
+                console.log('Server error: ' + e)
+                s.writeHead(404).end(err)
             }
         })
     }).listen(process.env.port || port)
