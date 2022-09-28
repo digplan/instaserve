@@ -18,7 +18,7 @@ export default function (routes, port = 3000) {
         r.on('end', (x) => {
             try {
                 if (debug) console.log(`parsing data: "${data}"`)
-                if (debug) console.log(`routes: "${routes}"`)
+                if (debug) console.log(`routes: "${JSON.stringify(routes)}"`)
                 if (data) data = JSON.parse(data)
                 const midware = Object.keys(routes)
                     .filter((k) => k.startsWith('_'))
@@ -30,7 +30,7 @@ export default function (routes, port = 3000) {
                 const url = r.url.split('/')[1]
                 if (routes[url]) {
                     const resp = routes[url](r, s, data)
-                    if(debug) console.log(`route: ${url}, returned: ${resp}`)
+                    if(debug) console.log(`route: ${url}, returned: ${JSON.stringify(resp)}`)
                     return s.end(typeof resp === 'string' ? resp:JSON.stringify(resp))
                 }
                 throw Error(r.url + ' not found')
