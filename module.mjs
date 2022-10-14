@@ -11,7 +11,7 @@ function public_file(r, s) {
     }
 }
 
-export default function (routes, port = 3000) {
+export default function (routes, port = 3000, ip = '127.0.0.1') {
     const server = http.createServer(async (r, s) => {
         let data = ''
         r.on('data', (s) => data += s.toString().trim())
@@ -40,9 +40,9 @@ export default function (routes, port = 3000) {
                 s.writeHead(404).end(err)
             }
         })
-    }).listen(process.env.port || port)
+    }).listen(process.env.port || port, process.env.ip || ip)
 
-    console.log('started on: ' + (process.env.port || port) + ', using routes: ' + Object.keys(routes))
+    console.log(`started on: ${(process.env.ip || ip)}:${(process.env.port || port)}, using routes: ${Object.keys(routes)}`)
     
     return {
         routes: routes,
