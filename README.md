@@ -34,7 +34,7 @@ serve({
 }, port)  // port is optional (3000)
 ````
 
-###Routes.mjs file example
+###Routes.mjs file example - data is request body + query string
 ````
 export default {
       _debug: ({ method, url }, s, data) => !console.log(method, url, data),

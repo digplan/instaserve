@@ -1,5 +1,6 @@
 import http from 'node:http'
 import fs from 'node:fs'
+
 const debug = process.env.debug
 
 function public_file(r, s) {
@@ -20,6 +21,7 @@ export default function (routes, port = 3000, ip = '127.0.0.1') {
                 if (debug) console.log(`parsing data: "${data}"`)
                 if (debug) console.log(`routes: "${JSON.stringify(routes)}"`)
                 if (data) data = JSON.parse(data)
+
                 const midware = Object.keys(routes)
                     .filter((k) => k.startsWith('_'))
                     .find((k) => routes[k](r, s, data))
@@ -27,7 +29,13 @@ export default function (routes, port = 3000, ip = '127.0.0.1') {
                 const fc = public_file(r, s)
                 if(fc) return s.end(fc)
                 
-                const url = r.url.split('/')[1]
+                if(r.url.match(/\?/)) {
+                    const qs = r.url?.split('?')[1]
+                    const o = JSON.parse('{"' + decodeURI(qs.replace(/&/g, "\",\"").replace(/=/g, "\":\"")) + '"}')
+                    data = Object.assign(data || {}, o)
+                }
+
+                const url = r.url.split('/')[1].split('?')[0]
                 if (routes[url]) {
                     const resp = routes[url](r, s, data)
                     if(debug) console.log(`route: ${url}, returned: ${JSON.stringify(resp)}`)
