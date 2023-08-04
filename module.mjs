@@ -14,13 +14,20 @@ function public_file(r, s) {
 
 export default function (routes, port = 3000, ip = '127.0.0.1') {
     const server = http.createServer(async (r, s) => {
-        let data = ''
-        r.on('data', (s) => data += s.toString().trim())
+        let sdata = ''
+        r.on('data', (s) => sdata += s.toString().trim())
         r.on('end', (x) => {
             try {
                 if (debug) console.log(`parsing data: "${data}"`)
                 if (debug) console.log(`routes: "${JSON.stringify(routes)}"`)
-                if (data) data = JSON.parse(data)
+                
+                // Compose data object
+                const data = sdata ? JSON.parse(sdata) : {}
+                const qs = r.url.split('?')
+                if(qs && qs[1]) {
+                    const o = JSON.parse('{"' + decodeURI(qs[1].replace(/&/g, "\",\"").replace(/=/g, "\":\"")) + '"}')
+                    Object.assign(data, o)
+                }
 
                 const midware = Object.keys(routes)
                     .filter((k) => k.startsWith('_'))
@@ -28,12 +35,6 @@ export default function (routes, port = 3000, ip = '127.0.0.1') {
 
                 const fc = public_file(r, s)
                 if(fc) return s.end(fc)
-                
-                if(r.url.match(/\?/)) {
-                    const qs = r.url?.split('?')[1]
-                    const o = JSON.parse('{"' + decodeURI(qs.replace(/&/g, "\",\"").replace(/=/g, "\":\"")) + '"}')
-                    data = Object.assign(data || {}, o)
-                }
 
                 const url = r.url.split('/')[1].split('?')[0]
                 if (routes[url]) {
