@@ -44,9 +44,8 @@ export default function (routes, port = 3000, ip = '127.0.0.1') {
                 }
                 throw Error(r.url + ' not found')
             } catch (e) {
-                const err = JSON.stringify({error: e.message})
-                console.log('Server error: ' + e)
-                s.writeHead(404).end(err)
+                console.error(e.stack)
+                s.writeHead(500).end()
             }
         })
     }).listen(process.env.port || port, process.env.ip || ip)
