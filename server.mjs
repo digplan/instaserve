@@ -1,20 +1,22 @@
 #!/usr/local/bin/node
 
+// > npx instaserve
+// > port=8080 npx instaserve
+
 import server from './module.mjs'
 import { pathToFileURL } from 'node:url'
-import { resolve } from 'node:path'
 import fs from 'node:fs'
-const routesfile = resolve(process.env.routes || 'routes.mjs')
 const [npx, instaserve, cmd] = process.argv
+const {port, ip} = process.env
 
-if (cmd === 'create' && !fs.existsSync(routesfile)) {
-  fs.writeFileSync(routesfile, `export default {
+if (cmd === 'create' && !fs.existsSync('routes.mjs')) {
+  fs.writeFileSync('routes.mjs', `export default {
         _debug: ({method, url}, s) => !console.log(method, url),
         _example: (r, s) => console.log('returning a falsy value (above) will stop the chain'),
         api: (r, s) => 'an example api response'
   }`)
 }
 
-const routesurl = pathToFileURL(routesfile).href
+const routesurl = pathToFileURL('routes.mjs').href
 const routes = (await import(routesurl)).default
-server(routes, process.env.port, process.env.ip)
+server(routes, Number(port||3000), ip)

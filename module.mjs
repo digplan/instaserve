@@ -1,7 +1,13 @@
 import http from 'node:http'
 import fs from 'node:fs'
 
-const debug = process.env.debug
+global.saveJSON = async (url, filename, options) => {
+    const f = await fetch(url, options)
+    const j = await f.json()
+    fs.writeFileSync(filename, JSON.stringify(j, null, 2))
+}
+
+const {debug, port, ip} = process.env
 
 function public_file(r, s) {
     if (r.url == '/') r.url = '/index.html'
@@ -14,16 +20,15 @@ function public_file(r, s) {
 
 export default function (routes, port = 3000, ip = '127.0.0.1') {
     const server = http.createServer(async (r, s) => {
-        let sdata = ''
+        let sdata = '', rrurl = r.url || ''
         r.on('data', (s) => sdata += s.toString().trim())
         r.on('end', (x) => {
             try {
-                if (debug) console.log(`parsing data: "${data}"`)
                 if (debug) console.log(`routes: "${JSON.stringify(routes)}"`)
                 
                 // Compose data object
                 const data = sdata ? JSON.parse(sdata) : {}
-                const qs = r.url.split('?')
+                const qs = rrurl.split('?')
                 if(qs && qs[1]) {
                     const o = JSON.parse('{"' + decodeURI(qs[1].replace(/&/g, "\",\"").replace(/=/g, "\":\"")) + '"}')
                     Object.assign(data, o)
@@ -33,10 +38,13 @@ export default function (routes, port = 3000, ip = '127.0.0.1') {
                     .filter((k) => k.startsWith('_'))
                     .find((k) => routes[k](r, s, data))
 
+                // Response closed by middleware
+                if(s.finished) return
+
                 const fc = public_file(r, s)
                 if(fc) return s.end(fc)
 
-                const url = r.url.split('/')[1].split('?')[0]
+                const url = rrurl.split('/')[1].split('?')[0]
                 if (routes[url]) {
                     const resp = routes[url](r, s, data)
                     if(debug) console.log(`route: ${url}, returned: ${JSON.stringify(resp)}`)
@@ -48,7 +56,7 @@ export default function (routes, port = 3000, ip = '127.0.0.1') {
                 s.writeHead(500).end()
             }
         })
-    }).listen(process.env.port || port, process.env.ip || ip)
+    }).listen(port || 3000, ip || '')
 
     console.log(`started on: ${(process.env.ip || ip)}:${(process.env.port || port)}, using routes: ${Object.keys(routes)}`)
     

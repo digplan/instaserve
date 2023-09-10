@@ -6,9 +6,7 @@ In any folder:
 > npx instaserve
 Starts a server in the current directory
 Create a public folder and add files for static file serving
-
-> npx instaserve create
-Creates an example routes.mjs file if none exists
+Use a routes.mjs or one will be created automatically
 
 > npm run deno (deno)
 Starts a deno server using routes.mjs and static serving
@@ -16,7 +14,7 @@ Starts a deno server using routes.mjs and static serving
 > npm run bun (bun)
 Starts a bun server
 
-> port=8080 routes=myroutes.mjs npx instaserve
+> port=8080 npx instaserve
 Use custom port and routes file
 
 ###Script usage
@@ -38,7 +36,12 @@ serve({
 ````
 export default {
       _debug: ({ method, url }, s, data) => !console.log(method, url, data),
-      _example: (r, s, data) => console.log('returning a falsy value (above) will stop the chain'),
+      _example: (r, s, data) => console.log('returning a truthy value (above) will stop the chain'),
       api: (r, s, data) => s.end('an example api response')
 }
+````
+
+###Helpers
+````
+saveJSON(url, file, fetch_options)
 ````
