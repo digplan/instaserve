@@ -1,5 +1,3 @@
-# Instaserve
-
 <div align="center">
   <h1 style="color: #3b82f6; margin: 10px 0 5px;">Instaserve</h1>
   <p style="color: #6b7280; margin: 0;">Instant web stack for Node.js</p>
