@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+
+import chalk from 'chalk'
+
+console.log(chalk.cyan('\nInstaserve - Instant Web Stack\n'))
+console.log(chalk.yellow('Usage:'))
+console.log(chalk.green('  npx instaserve [options]\n'))
+console.log(chalk.yellow('Options:'))
+console.log(chalk.green('  -port <number>') + '    Port to listen on (default: 3000)')
+console.log(chalk.green('  -ip <address>') + '     IP address to bind to (default: 127.0.0.1)')
+console.log(chalk.green('  -public <path>') + '    Public directory path (default: ./public)')
+console.log(chalk.green('  -api <file>') + '       Path to routes file (default: ./routes.mjs)')
+console.log(chalk.green('  -help') + '             Show this help message\n')
+
+if (process.argv.includes('-help')) {
+    process.exit(0)
+}
+
+import server from './module.mjs'
+
+const args = process.argv.slice(2)
+const params = Object.fromEntries(args.map(a => a.startsWith('-') ? [a.slice(1), args[args.indexOf(a) + 1]] : []).filter(a => a.length))
+
+let routes = {}
+if (params.api) {
+    routes = await import(params.api)
+}
+
+server(routes) 

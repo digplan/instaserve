@@ -1,47 +1,115 @@
-# instaserve
-Instant web stack
+# Instaserve
 
-In any folder:
+Instant web stack for Node.js
 
-> npx instaserve
-Starts a server in the current directory
-Create a public folder and add files for static file serving
-Use a routes.mjs or one will be created automatically
+## Usage
 
-> npm run deno (deno)
-Starts a deno server using routes.mjs and static serving
+```bash
+npx instaserve [options]
+```
 
-> npm run bun (bun)
-Starts a bun server
+### Options
 
-> port=8080 npx instaserve
-Use custom port and routes file
+- `-port <number>` - Port to listen on (default: 3000)
+- `-ip <address>` - IP address to bind to (default: 127.0.0.1)
+- `-public <path>` - Public directory path (default: ./public)
+- `-api <file>` - Path to routes file (default: ./routes.mjs)
+- `-help` - Show help message
 
-###Script usage
-````
-import serve from 'instaserve'
-serve({
+## Features
 
-    // routes prefixed with "_" run on every request
+- Static file serving from public directory
+- API routes with middleware support
+- Automatic JSON parsing for POST requests
+- Query string parameter support
+- Directory traversal protection
+- 404 handling for missing routes
+- 500 error handling for server errors
 
-    _log: (r, s) => console.log(r.method, r.url),
-    _example: (r, s) => console.log('returning a falsy value (above) will stop processing'),
+## Routes
 
-    api: (r, s, body) => s.end('an api response'),
+The routes file (`routes.mjs` by default) defines your API endpoints. Each route is a function that handles requests to a specific URL path.
 
-}, port)  // port is optional (3000)
-````
+### Basic Route Example
 
-###Routes.mjs file example - data is request body + query string
-````
+```javascript
 export default {
-      _debug: ({ method, url }, s, data) => !console.log(method, url, data),
-      _example: (r, s, data) => console.log('returning a truthy value (above) will stop the chain'),
-      api: (r, s, data) => s.end('an example api response')
+    // Handle GET /hello
+    hello: (req, res, data) => {
+        return { message: 'Hello World' }
+    }
 }
-````
+```
 
-###Helpers
-````
-saveJSON(url, file, fetch_options)
-````
+### Special Routes (Middleware)
+
+Routes starting with `_` are middleware functions that run on **every request** before the main route handler. They are useful for:
+
+- Logging requests
+- Authentication
+- Request modification
+- Response headers
+
+Middleware functions can:
+- Return `false` to continue to the next middleware or main route
+- Return a truthy value to stop processing and use that as the response
+- Modify the request or response objects
+
+#### Middleware Example
+
+```javascript
+export default {
+    // Log every request
+    _log: (req, res, data) => {
+        console.log(`${req.method} ${req.url}`)
+        return false // Continue processing
+    },
+
+    // Block unauthorized requests
+    _auth: (req, res, data) => {
+        if (!data.token) {
+            res.writeHead(401)
+            return 'Unauthorized'
+        }
+        return false // Continue if authorized
+    }
+}
+```
+
+### Route Parameters
+
+Each route function receives:
+- `req` - The HTTP request object
+- `res` - The HTTP response object
+- `data` - Combined data from:
+  - POST body (if JSON)
+  - URL query parameters
+  - Form data
+
+### Example Routes File
+
+```javascript
+export default {
+    // Middleware example
+    _debug: (req, res, data) => {
+        console.log('Request:', req.url)
+        return false // Continue to next route
+    },
+
+    // API endpoint
+    api: (req, res, data) => {
+        return { status: 'ok', data }
+    },
+
+    // Error handling
+    testerror: () => {
+        throw new Error('Test error')
+    }
+}
+```
+
+## Security
+
+- Directory traversal protection in URLs
+- Directory traversal protection in public directory path
+- Safe file serving from public directory only

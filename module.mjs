@@ -1,31 +1,37 @@
 import http from 'node:http'
 import fs from 'node:fs'
 
-global.saveJSON = async (url, filename, options) => {
-    const f = await fetch(url, options)
-    const j = await f.json()
-    fs.writeFileSync(filename, JSON.stringify(j, null, 2))
-}
-
-const {debug, port, ip} = process.env
+const args = process.argv.slice(2)
+const params = Object.fromEntries(args.map(a => a.startsWith('-') ? [a.slice(1), args[args.indexOf(a) + 1]] : []).filter(a => a.length))
 
 function public_file(r, s) {
     if (r.url == '/') r.url = '/index.html'
-    const fn = `./public${r.url.replace('..', '')}`
+    const fn = `${params.public || './public'}${r.url.replace(/\.\./g, '')}`
     if (fs.existsSync(fn)) {
         if (fn.match(/.js$/)) s.writeHead(200, { 'Content-Type': 'application/javascript' })
         return fs.readFileSync(fn, 'utf-8')
     }
 }
 
-export default function (routes, port = 3000, ip = '127.0.0.1') {
+export default async function (routes, port = params.port || 3000, ip = params.ip || '127.0.0.1') {
+    const publicDir = params.public || './public'
+    if (publicDir.includes('..')) {
+        throw new Error('Public directory path cannot contain ".."')
+    }
+    if (!fs.existsSync(publicDir)) {
+        throw new Error(`Public directory "${publicDir}" does not exist`)
+    }
+    
+    if (params.api) {
+        const imported = await import(params.api)
+        routes = imported.default
+    }
+
     const server = http.createServer(async (r, s) => {
         let sdata = '', rrurl = r.url || ''
         r.on('data', (s) => sdata += s.toString().trim())
         r.on('end', (x) => {
             try {
-                if (debug) console.log(`routes: "${JSON.stringify(routes)}"`)
-                
                 // Compose data object
                 const data = sdata ? JSON.parse(sdata) : {}
                 const qs = rrurl.split('?')
@@ -39,7 +45,7 @@ export default function (routes, port = 3000, ip = '127.0.0.1') {
                     .find((k) => routes[k](r, s, data))
 
                 // Response closed by middleware
-                if(s.finished) return
+                if(s.writableEnded) return
 
                 const fc = public_file(r, s)
                 if(fc) return s.end(fc)
@@ -47,10 +53,10 @@ export default function (routes, port = 3000, ip = '127.0.0.1') {
                 const url = rrurl.split('/')[1].split('?')[0]
                 if (routes[url]) {
                     const resp = routes[url](r, s, data)
-                    if(debug) console.log(`route: ${url}, returned: ${JSON.stringify(resp)}`)
                     return s.end(typeof resp === 'string' ? resp:JSON.stringify(resp))
                 }
-                throw Error(r.url + ' not found')
+                s.writeHead(404);
+                s.end();
             } catch (e) {
                 console.error(e.stack)
                 s.writeHead(500).end()
@@ -58,7 +64,7 @@ export default function (routes, port = 3000, ip = '127.0.0.1') {
         })
     }).listen(port || 3000, ip || '')
 
-    console.log(`started on: ${(process.env.ip || ip)}:${(process.env.port || port)}, using routes: ${Object.keys(routes)}`)
+    console.log(`started on: ${(process.env.ip || ip)}:${(process.env.port || port)}, public: ${publicDir}, ${params.api ? `using routes: ${Object.keys(routes)}` : 'not using routes'}`)
     
     return {
         routes: routes,
@@ -66,5 +72,4 @@ export default function (routes, port = 3000, ip = '127.0.0.1') {
         server: server,
         stop: () => { server.close(); return true }
     }
-
 }
