@@ -1,7 +1,6 @@
 # Instaserve
 
 <div align="center">
-  <img style="width: 60px;height: 60px;background: radial-gradient(circle at 30% 30%, #60a5fa, var(--primary));border-radius: 50%;margin: 0 auto 10px;box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);" />
   <h1 style="color: #3b82f6; margin: 10px 0 5px;">Instaserve</h1>
   <p style="color: #6b7280; margin: 0;">Instant web stack for Node.js</p>
 </div>
