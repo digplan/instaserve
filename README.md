@@ -1,5 +1,15 @@
 # Instaserve
 
+<style>
+          .orb {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, #60a5fa, var(--primary));
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+</style>
 <div align="center">
   <img src="https://via.placeholder.com/60/3b82f6/ffffff?text=IS" alt="Instaserve Orb" style="border-radius: 50%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);" />
   <h1 style="color: #3b82f6; margin: 10px 0 5px;">Instaserve</h1>
