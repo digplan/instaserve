@@ -30,14 +30,14 @@ export default {
         return false // Continue to next middleware or route
     },
 
-    // Example: Basic authentication
+    /**** Example: Basic authentication
     _auth: (req, res, data) => {
         if (!data.token) {
             res.writeHead(401)
             return 'Unauthorized'
         }
         return false // Continue if authorized
-    },
+    }, */
 
     // Regular route handlers
     hello: (req, res, data) => {
@@ -46,7 +46,7 @@ export default {
 
     _debug: ({method, url}, s, data) => { console.log(method, url, data) },
     _example: (r, s) => console.log('in routes.mjs, returning a truthy value (above) will stop the chain'),
-    _returnfalsy: (r, s) => { return true },
+    // _returnfalsy: (r, s) => { return true }, // Commented out - interferes with static file serving
 
     api: (r, s, data) => 'an example api response, data:' + JSON.stringify(data),
     testerror: () => { throw new Error('this from testerror') },

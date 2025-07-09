@@ -1,16 +1,37 @@
 import http from 'node:http'
+import https from 'node:https'
 import fs from 'node:fs'
 
 const args = process.argv.slice(2)
-const params = Object.fromEntries(args.map(a => a.startsWith('-') ? [a.slice(1), args[args.indexOf(a) + 1]] : []).filter(a => a.length))
+const params = {}
+for (let i = 0; i < args.length; i++) {
+    const arg = args[i]
+    if (arg.startsWith('-')) {
+        const key = arg.slice(1)
+        const nextArg = args[i + 1]
+        if (nextArg && !nextArg.startsWith('-')) {
+            params[key] = nextArg
+            i++ // Skip the next argument since we used it
+        } else {
+            params[key] = true // Boolean flag
+        }
+    }
+}
 
 function public_file(r, s) {
     if (r.url == '/') r.url = '/index.html'
     const fn = `${params.public || './public'}${r.url.replace(/\.\./g, '')}`
     if (fs.existsSync(fn)) {
-        if (fn.match(/.js$/)) s.writeHead(200, { 'Content-Type': 'application/javascript' })
-        return fs.readFileSync(fn, 'utf-8')
+        const content = fs.readFileSync(fn, 'utf-8')
+        if (fn.match(/.js$/)) {
+            s.writeHead(200, { 'Content-Type': 'application/javascript' })
+        } else {
+            s.writeHead(200)
+        }
+        s.end(content)
+        return true // Indicate file was served
     }
+    return false // Indicate no file was served
 }
 
 export default async function (routes, port = params.port || 3000, ip = params.ip || '127.0.0.1') {
@@ -21,14 +42,11 @@ export default async function (routes, port = params.port || 3000, ip = params.i
     if (!fs.existsSync(publicDir)) {
         throw new Error(`Public directory "${publicDir}" does not exist`)
     }
-    
-    if (params.api) {
-        const imported = await import(params.api)
-        routes = imported.default
-    }
 
-    const server = http.createServer(async (r, s) => {
+    const requestHandler = async (r, s) => {
         let sdata = '', rrurl = r.url || ''
+        let responseSent = false
+        
         r.on('data', (s) => sdata += s.toString().trim())
         r.on('end', (x) => {
             try {
@@ -42,29 +60,72 @@ export default async function (routes, port = params.port || 3000, ip = params.i
 
                 const midware = Object.keys(routes)
                     .filter((k) => k.startsWith('_'))
-                    .find((k) => routes[k](r, s, data))
+                    .find((k) => {
+                        const result = routes[k](r, s, data)
+                        if (result && !responseSent) {
+                            responseSent = true
+                            s.end(typeof result === 'string' ? result : JSON.stringify(result))
+                        }
+                        return result
+                    })
 
                 // Response closed by middleware
-                if(s.writableEnded) return
+                if(responseSent || s.writableEnded) return
 
-                const fc = public_file(r, s)
-                if(fc) return s.end(fc)
+                // Try to serve public file
+                if(public_file(r, s)) {
+                    responseSent = true
+                    return
+                }
 
                 const url = rrurl.split('/')[1].split('?')[0]
                 if (routes[url]) {
                     const resp = routes[url](r, s, data)
-                    return s.end(typeof resp === 'string' ? resp:JSON.stringify(resp))
+                    if (!responseSent && !s.writableEnded) {
+                        responseSent = true
+                        s.end(typeof resp === 'string' ? resp:JSON.stringify(resp))
+                    }
+                    return
                 }
-                s.writeHead(404);
-                s.end();
+                
+                if (!responseSent && !s.writableEnded) {
+                    responseSent = true
+                    s.writeHead(404);
+                    s.end();
+                }
             } catch (e) {
                 console.error(e.stack)
-                s.writeHead(500).end()
+                if (!responseSent && !s.writableEnded) {
+                    responseSent = true
+                    s.writeHead(500).end()
+                }
             }
         })
-    }).listen(port || 3000, ip || '')
+    }
 
-    console.log(`started on: ${(process.env.ip || ip)}:${(process.env.port || port)}, public: ${publicDir}, ${params.api ? `using routes: ${Object.keys(routes)}` : 'not using routes'}`)
+    let server
+    if (params.secure) {
+        const certPath = './cert.pem'
+        const keyPath = './key.pem'
+        
+        if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
+            throw new Error('Certificate files not found. Run ./generate-certs.sh first.')
+        }
+        
+        const options = {
+            cert: fs.readFileSync(certPath),
+            key: fs.readFileSync(keyPath)
+        }
+        
+        server = https.createServer(options, requestHandler)
+    } else {
+        server = http.createServer(requestHandler)
+    }
+
+    server.listen(port || 3000, ip || '')
+
+    const protocol = params.secure ? 'https' : 'http'
+    console.log(`started on: ${protocol}://${(process.env.ip || ip)}:${(process.env.port || port)}, public: ${publicDir}, ${Object.keys(routes).length > 0 ? `using routes: ${Object.keys(routes)}` : 'not using routes'}`)
     
     return {
         routes: routes,

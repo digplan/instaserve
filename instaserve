@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import chalk from 'chalk'
+import fs from 'node:fs'
 
 console.log(chalk.cyan('\nInstaserve - Instant Web Stack\n'))
 console.log(chalk.yellow('Usage:'))
@@ -9,7 +10,8 @@ console.log(chalk.yellow('Options:'))
 console.log(chalk.green('  -port <number>') + '    Port to listen on (default: 3000)')
 console.log(chalk.green('  -ip <address>') + '     IP address to bind to (default: 127.0.0.1)')
 console.log(chalk.green('  -public <path>') + '    Public directory path (default: ./public)')
-console.log(chalk.green('  -api <file>') + '       Path to routes file (default: ./routes.mjs)')
+console.log(chalk.green('  -api <file>') + '       Path to routes file (default: ./routes.js)')
+console.log(chalk.green('  -secure') + '           Enable HTTPS (requires cert.pem and key.pem: run generate-certs.sh)')
 console.log(chalk.green('  -help') + '             Show this help message\n')
 
 if (process.argv.includes('-help')) {
@@ -19,11 +21,31 @@ if (process.argv.includes('-help')) {
 import server from './module.mjs'
 
 const args = process.argv.slice(2)
-const params = Object.fromEntries(args.map(a => a.startsWith('-') ? [a.slice(1), args[args.indexOf(a) + 1]] : []).filter(a => a.length))
+const params = {}
+for (let i = 0; i < args.length; i++) {
+    const arg = args[i]
+    if (arg.startsWith('-')) {
+        const key = arg.slice(1)
+        const nextArg = args[i + 1]
+        if (nextArg && !nextArg.startsWith('-')) {
+            params[key] = nextArg
+            i++ // Skip the next argument since we used it
+        } else {
+            params[key] = true // Boolean flag
+        }
+    }
+}
 
+// Load routes file
 let routes = {}
-if (params.api) {
-    routes = await import(params.api)
+const routesFile = params.api || './routes.js'
+if (fs.existsSync(routesFile)) {
+    try {
+        const imported = await import(routesFile)
+        routes = imported.default || imported
+    } catch (e) {
+        console.log(chalk.yellow(`Warning: Could not load routes file ${routesFile}: ${e.message}`))
+    }
 }
 
 server(routes) 

@@ -28,7 +28,12 @@
 
 <div style="display: flex; gap: 8px; margin: 8px 0;">
   <code style="background: #f3f4f6; padding: 2px 4px; border-radius: 4px; color: #2563eb;">-api &lt;file&gt;</code>
-  <span>Path to routes file (default: ./routes.mjs)</span>
+  <span>Path to routes file (default: ./routes.js)</span>
+</div>
+
+<div style="display: flex; gap: 8px; margin: 8px 0;">
+  <code style="background: #f3f4f6; padding: 2px 4px; border-radius: 4px; color: #2563eb;">-secure</code>
+  <span>Enable HTTPS (requires cert.pem and key.pem - run ./generate-certs.sh)</span>
 </div>
 
 <div style="display: flex; gap: 8px; margin: 8px 0;">
@@ -36,9 +41,29 @@
   <span>Show help message</span>
 </div>
 
+## HTTPS Support
+
+Instaserve supports HTTPS with self-signed certificates. To enable HTTPS:
+
+1. **Generate certificates:**
+   ```bash
+   ./generate-certs.sh
+   ```
+   This creates `cert.pem` and `key.pem` files and adds them to your system's trust store.
+
+2. **Run with HTTPS:**
+   ```bash
+   npx instaserve -secure
+   ```
+
+The certificate generation script:
+- Creates a self-signed certificate valid for 365 days
+- Automatically adds the certificate to your system trust store (macOS/Linux)
+- Prevents browser security warnings
+
 ## Routes
 
-The routes file (`routes.mjs` by default) defines your API endpoints. Each route is a function that handles requests to a specific URL path.
+The routes file (`routes.js` by default) defines your API endpoints. Each route is a function that handles requests to a specific URL path.
 
 ### Basic Route Example
 
@@ -99,6 +124,7 @@ Each route function receives:
 ### Example Routes File
 
 ```javascript
+// routes.js
 export default {
     // Middleware example
     _debug: (req, res, data) => {

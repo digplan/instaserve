@@ -117,11 +117,20 @@
     <div class="option"><code>-port &lt;number&gt;</code> - Port to listen on (default: 3000)</div>
     <div class="option"><code>-ip &lt;address&gt;</code> - IP address to bind to (default: 127.0.0.1)</div>
     <div class="option"><code>-public &lt;path&gt;</code> - Public directory path (default: ./public)</div>
-    <div class="option"><code>-api &lt;file&gt;</code> - Path to routes file (default: ./routes.mjs)</div>
+    <div class="option"><code>-api &lt;file&gt;</code> - Path to routes file (default: ./routes.js)</div>
+    <div class="option"><code>-secure</code> - Enable HTTPS (requires cert.pem and key.pem - run ./generate-certs.sh)</div>
     <div class="option"><code>-help</code> - Show help message</div>
 
+    <h2>HTTPS Support</h2>
+    <p>Instaserve supports HTTPS with self-signed certificates. To enable HTTPS:</p>
+    <ol>
+        <li><strong>Generate certificates:</strong> <code>./generate-certs.sh</code></li>
+        <li><strong>Run with HTTPS:</strong> <code>npx instaserve -secure</code></li>
+    </ol>
+    <p>The certificate generation script creates trusted certificates that won't show browser warnings.</p>
+
     <h2>Routes</h2>
-    <p>The routes file (<code>routes.mjs</code> by default) defines your API endpoints. Each route is a function that handles requests to a specific URL path.</p>
+    <p>The routes file (<code>routes.js</code> by default) defines your API endpoints. Each route is a function that handles requests to a specific URL path.</p>
 
     <h3>Basic Route Example</h3>
     <pre><code>export default {
