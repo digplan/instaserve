@@ -1,6 +1,11 @@
 <div align="center">
   <h1 style="color: #3b82f6; margin: 10px 0 5px;">Instaserve</h1>
   <p style="color: #6b7280; margin: 0;">Instant web stack for Node.js</p>
+  
+  <p>
+    <img src="https://img.shields.io/npm/v/instaserve" alt="npm version" />
+    <img src="https://img.shields.io/bundlephobia/minzip/instaserve" alt="bundle size" />
+  </p>
 </div>
 
 ## Usage
