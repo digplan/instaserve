@@ -2,6 +2,8 @@
 
 import chalk from 'chalk'
 import fs from 'node:fs'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 console.log(chalk.cyan('\nInstaserve - Instant Web Stack\n'))
 console.log(chalk.yellow('Usage:'))
@@ -85,32 +87,38 @@ for (let i = 0; i < args.length; i++) {
 
 // Load routes file
 let routes = {}
-const routesFile = params.api || './routes.js'
+const routesFileParam = params.api || './routes.js'
 const routesFileSpecified = !!params.api
 
+// Resolve to absolute path from current working directory
+const routesFile = path.isAbsolute(routesFileParam) 
+    ? routesFileParam 
+    : path.resolve(process.cwd(), routesFileParam)
+
 if (routesFileSpecified && !fs.existsSync(routesFile)) {
-    console.error(chalk.red(`Error: Routes file "${routesFile}" does not exist`))
+    console.error(chalk.red(`Error: Routes file "${routesFileParam}" does not exist`))
     process.exit(1)
 }
 
 if (fs.existsSync(routesFile)) {
     try {
-        const imported = await import(routesFile)
+        const routesFileURL = pathToFileURL(routesFile).href
+        const imported = await import(routesFileURL)
         routes = imported.default || imported
         
         if (!routes || typeof routes !== 'object' || Array.isArray(routes)) {
-            console.error(chalk.red(`Error: Routes file "${routesFile}" must export a default object`))
+            console.error(chalk.red(`Error: Routes file "${routesFileParam}" must export a default object`))
             process.exit(1)
         }
         
         for (const [key, handler] of Object.entries(routes)) {
             if (typeof handler !== 'function') {
-                console.error(chalk.red(`Error: Route "${key}" in "${routesFile}" must be a function`))
+                console.error(chalk.red(`Error: Route "${key}" in "${routesFileParam}" must be a function`))
                 process.exit(1)
             }
         }
     } catch (e) {
-        console.error(chalk.red(`Error: Could not load routes file "${routesFile}": ${e.message}`))
+        console.error(chalk.red(`Error: Could not load routes file "${routesFileParam}": ${e.message}`))
         process.exit(1)
     }
 }
