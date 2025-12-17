@@ -6,7 +6,15 @@
 ## Usage
 
 <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); margin: 15px 0;">
-  <pre style="margin: 0;"><code>npx instaserve [options]</code></pre>
+  <pre style="margin: 0;"><code>npx instaserve [options]
+npx instaserve generate-routes</code></pre>
+</div>
+
+## Commands
+
+<div style="display: flex; gap: 8px; margin: 8px 0;">
+  <code style="background: #f3f4f6; padding: 2px 4px; border-radius: 4px; color: #2563eb;">generate-routes</code>
+  <span>Create a sample routes.js file in the current directory</span>
 </div>
 
 ## Options
@@ -64,6 +72,24 @@ The certificate generation script:
 ## Routes
 
 The routes file (`routes.js` by default) defines your API endpoints. Each route is a function that handles requests to a specific URL path.
+
+### Generating a Routes File
+
+To create a sample `routes.js` file with example routes and middleware:
+
+```bash
+npx instaserve generate-routes
+```
+
+This creates a `routes.js` file in the current directory with example code. If the file already exists, the command will fail to prevent overwriting.
+
+### Routes File Validation
+
+Instaserve validates routes files on startup:
+- If `-api` is specified and the file doesn't exist, the server will fail to start
+- The routes file must export a default object
+- All route handlers must be functions
+- Invalid routes files will cause the server to exit with an error message
 
 ### Basic Route Example
 

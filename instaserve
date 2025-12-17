@@ -5,7 +5,10 @@ import fs from 'node:fs'
 
 console.log(chalk.cyan('\nInstaserve - Instant Web Stack\n'))
 console.log(chalk.yellow('Usage:'))
-console.log(chalk.green('  npx instaserve [options]\n'))
+console.log(chalk.green('  npx instaserve [options]'))
+console.log(chalk.green('  npx instaserve generate-routes\n'))
+console.log(chalk.yellow('Commands:'))
+console.log(chalk.green('  generate-routes') + '   Create a sample routes.js file in the current directory\n')
 console.log(chalk.yellow('Options:'))
 console.log(chalk.green('  -port <number>') + '    Port to listen on (default: 3000)')
 console.log(chalk.green('  -ip <address>') + '     IP address to bind to (default: 127.0.0.1)')
@@ -18,9 +21,53 @@ if (process.argv.includes('-help')) {
     process.exit(0)
 }
 
+const args = process.argv.slice(2)
+
+// Handle generate-routes command
+if (args[0] === 'generate-routes') {
+    const routesFile = './routes.js'
+    if (fs.existsSync(routesFile)) {
+        console.error(chalk.red(`Error: ${routesFile} already exists`))
+        process.exit(1)
+    }
+    
+    const sampleRoutes = `export default {
+    // Middleware functions (prefixed with _) run on every request
+    // Return false to continue processing, or a value to use as response
+    
+    // Example: Log all requests
+    _log: (req, res, data) => {
+        console.log(\`\${req.method} \${req.url}\`)
+        return false // Continue to next middleware or route
+    },
+
+    // Example: Basic authentication (commented out)
+    // _auth: (req, res, data) => {
+    //     if (!data.token) {
+    //         res.writeHead(401)
+    //         return 'Unauthorized'
+    //     }
+    //     return false // Continue if authorized
+    // },
+
+    // Regular route handlers
+    hello: (req, res, data) => {
+        return { message: 'Hello World' }
+    },
+
+    api: (req, res, data) => {
+        return { message: 'API endpoint', data }
+    }
+}
+`
+    
+    fs.writeFileSync(routesFile, sampleRoutes)
+    console.log(chalk.green(`✓ Created ${routesFile}`))
+    process.exit(0)
+}
+
 import server from './module.mjs'
 
-const args = process.argv.slice(2)
 const params = {}
 for (let i = 0; i < args.length; i++) {
     const arg = args[i]
@@ -39,12 +86,32 @@ for (let i = 0; i < args.length; i++) {
 // Load routes file
 let routes = {}
 const routesFile = params.api || './routes.js'
+const routesFileSpecified = !!params.api
+
+if (routesFileSpecified && !fs.existsSync(routesFile)) {
+    console.error(chalk.red(`Error: Routes file "${routesFile}" does not exist`))
+    process.exit(1)
+}
+
 if (fs.existsSync(routesFile)) {
     try {
         const imported = await import(routesFile)
         routes = imported.default || imported
+        
+        if (!routes || typeof routes !== 'object' || Array.isArray(routes)) {
+            console.error(chalk.red(`Error: Routes file "${routesFile}" must export a default object`))
+            process.exit(1)
+        }
+        
+        for (const [key, handler] of Object.entries(routes)) {
+            if (typeof handler !== 'function') {
+                console.error(chalk.red(`Error: Route "${key}" in "${routesFile}" must be a function`))
+                process.exit(1)
+            }
+        }
     } catch (e) {
-        console.log(chalk.yellow(`Warning: Could not load routes file ${routesFile}: ${e.message}`))
+        console.error(chalk.red(`Error: Could not load routes file "${routesFile}": ${e.message}`))
+        process.exit(1)
     }
 }
 
