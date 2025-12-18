@@ -27,9 +27,9 @@ const args = process.argv.slice(2)
 
 // Handle generate-routes command
 if (args[0] === 'generate-routes') {
-    const routesFile = './routes.js'
+    const routesFile = path.resolve(process.cwd(), './routes.js')
     if (fs.existsSync(routesFile)) {
-        console.error(chalk.red(`Error: ${routesFile} already exists`))
+        console.error(chalk.red(`Error: routes.js already exists`))
         process.exit(1)
     }
     
@@ -59,12 +59,21 @@ if (args[0] === 'generate-routes') {
 
     api: (req, res, data) => {
         return { message: 'API endpoint', data }
+    },
+
+    // Method-specific routes (POST, GET, PUT, DELETE)
+    'POST /users': (req, res, data) => {
+        return { message: 'Create user', data }
+    },
+
+    'GET /users': (req, res, data) => {
+        return { message: 'Get users' }
     }
 }
 `
     
     fs.writeFileSync(routesFile, sampleRoutes)
-    console.log(chalk.green(`✓ Created ${routesFile}`))
+    console.log(chalk.green(`✓ Created routes.js`))
     process.exit(0)
 }
 
@@ -87,6 +96,7 @@ for (let i = 0; i < args.length; i++) {
 
 // Load routes file
 let routes = {}
+let routesFilePath = null
 const routesFileParam = params.api || './routes.js'
 const routesFileSpecified = !!params.api
 
@@ -117,10 +127,11 @@ if (fs.existsSync(routesFile)) {
                 process.exit(1)
             }
         }
+        routesFilePath = routesFile
     } catch (e) {
         console.error(chalk.red(`Error: Could not load routes file "${routesFileParam}": ${e.message}`))
         process.exit(1)
     }
 }
 
-server(routes) 
+server(routes, params.port ? parseInt(params.port) : undefined, params.ip, routesFilePath) 

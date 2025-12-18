@@ -24,13 +24,5 @@ export default {
 
     api: (req, res, data) => {
         return { message: 'API endpoint', data }
-    },
-
-    example429: (req, res, data) => {
-        return 429; // This will return a status code 429
-    },
-
-    "POST /examplepost": (req, res, data) => {
-        return { message: 'Example POST endpoint', data }
     }
 }

@@ -107,6 +107,39 @@ export default {
 }
 ```
 
+### Method-Specific Routes
+
+Routes can be defined with HTTP method prefixes to handle different methods on the same path. Supported methods: `GET`, `POST`, `PUT`, `DELETE`.
+
+```javascript
+export default {
+    // Method-specific routes
+    'POST /users': (req, res, data) => {
+        return { message: 'Create user', data }
+    },
+    
+    'GET /users': (req, res, data) => {
+        return { message: 'Get users' }
+    },
+    
+    'PUT /users': (req, res, data) => {
+        return { message: 'Update user', data }
+    },
+    
+    'DELETE /users': (req, res, data) => {
+        return { message: 'Delete user', data }
+    },
+    
+    // Path-only routes still work (backward compatible)
+    // These match any HTTP method
+    hello: (req, res, data) => {
+        return { message: 'Hello World' }
+    }
+}
+```
+
+Method-specific routes take precedence over path-only routes. If no method-specific route matches, the server falls back to path-only route matching.
+
 ### Special Routes (Middleware)
 
 Routes starting with `_` are middleware functions that run on **every request** before the main route handler. They are useful for:
@@ -152,6 +185,25 @@ Each route function receives:
   - URL query parameters
   - Form data
 
+### Returning Status Codes
+
+Routes can return a 3-digit number (100-999) to set the HTTP status code with an empty response body:
+
+```javascript
+export default {
+    'GET /notfound': () => 404,
+    'GET /unauthorized': () => 401,
+    'GET /forbidden': () => 403,
+    'GET /teapot': () => 418, // I'm a teapot
+    'GET /created': () => 201
+}
+```
+
+Routes can also return:
+- **Strings** - Sent as plain text response
+- **Objects** - Automatically serialized as JSON
+- **Status codes** - 3-digit numbers (100-999) set HTTP status with empty body
+
 ### Example Routes File
 
 ```javascript
@@ -163,7 +215,19 @@ export default {
         return false // Continue to next route
     },
 
-    // API endpoint
+    // Method-specific routes
+    'POST /api/users': (req, res, data) => {
+        return { status: 'created', data }
+    },
+    
+    'GET /api/users': (req, res, data) => {
+        return { status: 'ok', users: [] }
+    },
+    
+    'GET /api/notfound': () => 404,
+    'GET /api/unauthorized': () => 401,
+
+    // Path-only route (matches any method)
     api: (req, res, data) => {
         return { status: 'ok', data }
     },
