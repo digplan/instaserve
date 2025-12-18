@@ -34,5 +34,24 @@ export default {
 
   "POST /examplepost": (req, res, data) => {
     return { message: 'Example POST endpoint', data }
-  }
+  },
+
+  "GET /sse": (req, res, data) => {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    })
+    var x = 3;
+    const interval = setInterval(() => {
+      if (x <= 0) {
+        clearInterval(interval)
+        res.end()
+        return
+      }
+      res.write(`data: Hello World ${x}\n\n`)
+      x--
+    }, 1000)
+    return "SSE"
+  },
 }

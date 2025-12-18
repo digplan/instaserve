@@ -62,7 +62,9 @@ export default async function (routes, port = params.port || 3000, ip = params.i
         s.writeHead(result)
         s.end()
       } else {
-        s.end(typeof result === 'string' ? result : JSON.stringify(result))
+        if (result != "SSE") {
+          s.end(typeof result === 'string' ? result : JSON.stringify(result))
+        }
       }
     }
 
