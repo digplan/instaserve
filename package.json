@@ -1,14 +1,14 @@
 {
-    "name": "instaserve",
-    "version": "1.1.6",
-    "description": "Instant web stack",
-    "main": "module.mjs",
-    "bin": "./instaserve",
-    "scripts": {
-        "start": "node instaserve"
-    },
-    "type": "module",
-    "dependencies": {
-        "chalk": "^5.6.2"
-    }
+  "name": "instaserve",
+  "version": "1.1.8",
+  "description": "Instant web stack",
+  "main": "module.mjs",
+  "bin": "./instaserve",
+  "scripts": {
+    "start": "node instaserve"
+  },
+  "type": "module",
+  "dependencies": {
+    "chalk": "^5.6.2"
+  }
 }
