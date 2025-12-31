@@ -1,13 +1,14 @@
+$$ = document.querySelectorAll.bind(document);
+$ = document.querySelector.bind(document);
+
 window.login = () => {
   window.location.href = `${window.apiurl}/login`;
 }
 
-window.logout = () => {
-  window.location.href = `${window.apiurl}/logout`;
-}
-
-window.loggedIn = () => {
-  return document.cookie.includes("loggedIn=true");
+window.logout = async () => {
+  const res = await (await api('GET', '/logout')).text();
+  if (res != 'logged out') throw new Error(res);
+  $$('[user]').forEach(e => e.remove());
 }
 
 window.api = (method, url, body) => {
@@ -56,12 +57,28 @@ window.subscribe = (callback) => {
   return evtSource;
 }
 
+window.loggedIn = async () => {
+  try {
+    const status = (await api('GET', '/api?key=auth')).status;
+    if (status == 200) {
+      return true;
+    }
+    if (status == 401) {
+      return false;
+    }
+    throw new Error("Disconnected with status: " + status);
+  } catch {
+    return null;
+  }
+}
+
 class FileWidget extends HTMLElement {
   constructor() {
     super();
   }
 
-  connectedCallback() {
+  async connectedCallback() {
+    if (!(await loggedIn())) return;
     if (!this.innerHTML.trim()) {
       this.innerHTML = `
         <ul id="files" style="list-style: none; padding: 0;"></ul>
@@ -159,7 +176,8 @@ customElements.define("file-widget", FileWidget);
 
 
 class KVWidget extends HTMLElement {
-  connectedCallback() {
+  async connectedCallback() {
+    if (!(await loggedIn())) return;
     if (!this.innerHTML.trim()) {
       this.innerHTML = `
       <div style="border: 1px solid #eee; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
@@ -190,7 +208,8 @@ class KVWidget extends HTMLElement {
 }
 
 class SSEWidget extends HTMLElement {
-  connectedCallback() {
+  async connectedCallback() {
+    if (!(await loggedIn())) return;
     this.innerHTML = `
       <div style="border: 1px solid #eee; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
         <h3 style="margin-top: 0;">SSE Events</h3>
