@@ -1,6 +1,8 @@
 $$ = document.querySelectorAll.bind(document);
 $ = document.querySelector.bind(document);
 
+document.cookie = `home=${window.location.href}`;
+
 window.login = () => {
   window.location.href = `${window.apiurl}/login`;
 }
@@ -131,24 +133,48 @@ class FileWidget extends HTMLElement {
         files.forEach(f => {
           const fileName = f.key || f; // Handle object or string
           const li = document.createElement("li");
-          li.style.marginBottom = "8px";
+          li.style.padding = "8px 0";
+          li.style.borderBottom = "1px solid #eee";
           li.style.display = "flex";
           li.style.alignItems = "center";
           li.style.gap = "10px";
 
           const nameSpan = document.createElement("span");
           nameSpan.textContent = fileName;
+          nameSpan.style.flex = "1";
+          nameSpan.style.overflow = "hidden";
+          nameSpan.style.textOverflow = "ellipsis";
+          nameSpan.style.whiteSpace = "nowrap";
 
           const download = document.createElement("a");
-          download.href = `${window.apiurl}/download?key=${encodeURIComponent(fileName)}`;
-          download.textContent = "Download";
-          download.download = fileName;
+          download.href = "#";
+          download.textContent = "⤓";
           download.className = "btn-sm";
           download.style.textDecoration = "none";
           download.style.fontSize = "0.8rem";
+          download.onclick = async (e) => {
+            e.preventDefault();
+            try {
+              const res = await window.api('GET', `/download?key=${encodeURIComponent(fileName)}`);
+              if (!res.ok) throw new Error('Download failed');
+              const blob = await res.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.style.display = 'none';
+              a.href = url;
+              a.download = fileName;
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              a.remove();
+            } catch (err) {
+              console.error(err);
+              alert("Download failed");
+            }
+          };
 
           const del = document.createElement("button");
-          del.textContent = "Delete";
+          del.textContent = "🗑";
           del.className = "btn-sm";
           del.style.color = "red";
           del.style.borderColor = "#ffcccc";

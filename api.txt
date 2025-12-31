@@ -1,23 +1,27 @@
 Instaserve API Documentation
+============================
 
-Authentication
---------------
+Authentication (lib/auth0.js)
+-----------------------------
 GET /login
   Redirects to Auth0 for sign-in.
-  Sets a secure http-only session cookie ('token') upon success.
+  State is managed securely.
 
 GET /logout
-  Logs the user out and clears the session.
+  Logs the user out and clears the session cookies.
 
-Key-Value Store (SQLite)
-------------------------
-* All endpoints require authentication.
-* Data is isolated per user.
+GET /callback
+  (Internal) Handles the Auth0 callback, exchanges code for token, and sets session cookies.
+
+Key-Value Store (lib/sqlite.js)
+-------------------------------
+* Note: Data isolation depends on `req.user` being set (e.g. by `_auth` middleware).
 
 POST /api
   Set a key-value pair.
   Body (JSON): { "key": "myKey", "value": "myValue" }
   Returns: { "key": "myKey", "value": "myValue" }
+  * Triggers SSE 'update' event.
 
 GET /api?key=myKey
   Retrieve a value by key.
@@ -31,31 +35,42 @@ DELETE /api
   Delete a key.
   Body (JSON): { "key": "myKey" }
   Returns: { "deleted": true, "key": "myKey" }
+  * Triggers SSE 'delete' event.
 
-Storage (R2 / S3)
------------------
-* Requires R2 environment variables to be set on the server.
-* Uses the credentials provided in endpoints or server defaults.
+Storage (lib/r2.js)
+-------------------
+* Uses Cloudflare R2 or S3-compatible storage.
 
 POST /upload
   Upload a file.
   Body (JSON):
   {
-    "bucket": "my-bucket-name", // Optional if env var set
+    "bucket": "my-bucket", // Optional if env var set
     "key": "filename.jpg",
-    "body": "base64_encoded_string_contents",
+    "body": "base64_encoded_string",
     "contentType": "image/jpeg"
   }
 
 POST /files
   List files in a bucket.
-  Body (JSON): { "bucket": "my-bucket-name" } // Bucket optional if env var set
-  Returns: List of file objects (key, size, lastModified).
+  Body (JSON):
+  {
+    "bucket": "my-bucket", // Optional
+    "prefix": "optional-key-prefix"
+  }
+  Returns: [{ "key": "...", "size": 123, "lastModified": "..." }, ...]
 
-GET /download?bucket=my-bucket-name&key=filename.jpg
-  Download a file directly. Bucket optional if env var set.
-  (Available via the 'download' route handler)
+GET /download?bucket=my-bucket&key=filename.jpg
+  Download a file (streams content).
 
-GET /delete?bucket=my-bucket-name&key=filename.jpg
-  Delete a file. Bucket optional if env var set.
-  (Available via the 'delete' route handler)
+GET /delete?bucket=my-bucket&key=filename.jpg
+  Delete a file.
+  Returns: { "success": true }
+
+Real-time Updates (lib/sse.js)
+------------------------------
+GET /sse
+  Subscribe to server-sent events for real-time updates.
+  Events emitted on KV changes:
+  - { "type": "update", "user": "...", "key": "...", "value": "..." }
+  - { "type": "delete", "user": "...", "key": "..." }

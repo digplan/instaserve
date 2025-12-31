@@ -23,13 +23,13 @@ export default {
   _auth: (req, res, data) => {
     if (req.url === '/' || req.url.match(/js|html|css|callback|logout|login|register/)) return;
     const token = req.headers.cookie?.split('token=')[1].split(';')[0];
-    console.log("Token:", token);
+    //console.log("Token:", token);
     if (!token) return 401;
     const user = global.sqlite.prepare("SELECT * FROM users WHERE token = ?").get(token);
-    console.log("User:", user);
+    //console.log("User:", user);
     if (!user) return 401;
     req.user = user.username;
-    console.log("Authenticated user:", req.user);
+    //console.log("Authenticated user:", req.user);
   },
   ...auth0,
   ...fileRoutes,
