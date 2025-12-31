@@ -3,7 +3,7 @@
 import chalk from 'chalk'
 import fs from 'node:fs'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { pathToFileURL, fileURLToPath } from 'node:url'
 
 console.log(chalk.cyan('\nInstaserve - Instant Web Stack\n'))
 console.log(chalk.yellow('Usage:'))
@@ -20,20 +20,20 @@ console.log(chalk.green('  -secure') + '           Enable HTTPS (requires cert.p
 console.log(chalk.green('  -help') + '             Show this help message\n')
 
 if (process.argv.includes('-help')) {
-    process.exit(0)
+  process.exit(0)
 }
 
 const args = process.argv.slice(2)
 
 // Handle generate-routes command
 if (args[0] === 'generate-routes') {
-    const routesFile = path.resolve(process.cwd(), './routes.js')
-    if (fs.existsSync(routesFile)) {
-        console.error(chalk.red(`Error: routes.js already exists`))
-        process.exit(1)
-    }
-    
-    const sampleRoutes = `export default {
+  const routesFile = path.resolve(process.cwd(), './routes.js')
+  if (fs.existsSync(routesFile)) {
+    console.error(chalk.red(`Error: routes.js already exists`))
+    process.exit(1)
+  }
+
+  const sampleRoutes = `export default {
     // Middleware functions (prefixed with _) run on every request
     // Return false to continue processing, or a value to use as response
     
@@ -71,27 +71,41 @@ if (args[0] === 'generate-routes') {
     }
 }
 `
-    
-    fs.writeFileSync(routesFile, sampleRoutes)
-    console.log(chalk.green(`✓ Created routes.js`))
-    process.exit(0)
+
+  fs.writeFileSync(routesFile, sampleRoutes)
+  console.log(chalk.green(`✓ Created routes.js`))
+
+  const __dirname = path.dirname(fileURLToPath(import.meta.url))
+  const sourceLib = path.join(__dirname, 'lib')
+
+  if (fs.existsSync(sourceLib)) {
+    const destLib = path.join(process.cwd(), 'lib')
+    if (!fs.existsSync(destLib)) {
+      fs.cpSync(sourceLib, destLib, { recursive: true })
+      console.log(chalk.green(`✓ Created lib/`))
+    } else {
+      console.log(chalk.yellow(`! lib/ directory already exists, skipping copy`))
+    }
+  }
+
+  process.exit(0)
 }
 
 import server from './module.mjs'
 
 const params = {}
 for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
-    if (arg.startsWith('-')) {
-        const key = arg.slice(1)
-        const nextArg = args[i + 1]
-        if (nextArg && !nextArg.startsWith('-')) {
-            params[key] = nextArg
-            i++ // Skip the next argument since we used it
-        } else {
-            params[key] = true // Boolean flag
-        }
+  const arg = args[i]
+  if (arg.startsWith('-')) {
+    const key = arg.slice(1)
+    const nextArg = args[i + 1]
+    if (nextArg && !nextArg.startsWith('-')) {
+      params[key] = nextArg
+      i++ // Skip the next argument since we used it
+    } else {
+      params[key] = true // Boolean flag
     }
+  }
 }
 
 // Load routes file
@@ -101,37 +115,37 @@ const routesFileParam = params.api || './routes.js'
 const routesFileSpecified = !!params.api
 
 // Resolve to absolute path from current working directory
-const routesFile = path.isAbsolute(routesFileParam) 
-    ? routesFileParam 
-    : path.resolve(process.cwd(), routesFileParam)
+const routesFile = path.isAbsolute(routesFileParam)
+  ? routesFileParam
+  : path.resolve(process.cwd(), routesFileParam)
 
 if (routesFileSpecified && !fs.existsSync(routesFile)) {
-    console.error(chalk.red(`Error: Routes file "${routesFileParam}" does not exist`))
-    process.exit(1)
+  console.error(chalk.red(`Error: Routes file "${routesFileParam}" does not exist`))
+  process.exit(1)
 }
 
 if (fs.existsSync(routesFile)) {
-    try {
-        const routesFileURL = pathToFileURL(routesFile).href
-        const imported = await import(routesFileURL)
-        routes = imported.default || imported
-        
-        if (!routes || typeof routes !== 'object' || Array.isArray(routes)) {
-            console.error(chalk.red(`Error: Routes file "${routesFileParam}" must export a default object`))
-            process.exit(1)
-        }
-        
-        for (const [key, handler] of Object.entries(routes)) {
-            if (typeof handler !== 'function') {
-                console.error(chalk.red(`Error: Route "${key}" in "${routesFileParam}" must be a function`))
-                process.exit(1)
-            }
-        }
-        routesFilePath = routesFile
-    } catch (e) {
-        console.error(chalk.red(`Error: Could not load routes file "${routesFileParam}": ${e.message}`))
-        process.exit(1)
+  try {
+    const routesFileURL = pathToFileURL(routesFile).href
+    const imported = await import(routesFileURL)
+    routes = imported.default || imported
+
+    if (!routes || typeof routes !== 'object' || Array.isArray(routes)) {
+      console.error(chalk.red(`Error: Routes file "${routesFileParam}" must export a default object`))
+      process.exit(1)
     }
+
+    for (const [key, handler] of Object.entries(routes)) {
+      if (typeof handler !== 'function') {
+        console.error(chalk.red(`Error: Route "${key}" in "${routesFileParam}" must be a function`))
+        process.exit(1)
+      }
+    }
+    routesFilePath = routesFile
+  } catch (e) {
+    console.error(chalk.red(`Error: Could not load routes file "${routesFileParam}": ${e.message}`))
+    process.exit(1)
+  }
 }
 
 server(routes, params.port ? parseInt(params.port) : undefined, params.ip, routesFilePath) 

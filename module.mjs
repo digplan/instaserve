@@ -43,9 +43,7 @@ export default async function (routes, port = params.port || 3000, ip = params.i
   if (publicDir.includes('..')) {
     throw new Error('Public directory path cannot contain ".."')
   }
-  if (!fs.existsSync(publicDir)) {
-    throw new Error(`Public directory "${publicDir}" does not exist`)
-  }
+
 
   const requestHandler = async (r, s) => {
     let sdata = '', rrurl = r.url || ''

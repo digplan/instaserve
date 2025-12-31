@@ -8,10 +8,27 @@
   </p>
 </div>
 
+## Configuration
+
+Instaserve uses environment variables for Auth0 and Cloudflare R2 integration. Create a `.env` file (if your runner supports it) or pass them before the command.
+
+### Auth0 Variables
+- `AUTH0_DOMAIN`: Your Auth0 domain
+- `AUTH0_CLIENT_ID`: Your Auth0 Client ID
+- `AUTH0_CLIENT_SECRET`: Your Auth0 Client Secret
+
+### Cloudflare R2 Variables (via `lib/r2.js`)
+- `CLOUDFLARE_ACCOUNT_ID`: R2 Account ID
+- `CLOUDFLARE_ACCESS_KEY_ID`: R2 Access Key ID
+- `CLOUDFLARE_SECRET_ACCESS_KEY`: R2 Secret Access Key
+
 ## Usage
 
 <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); margin: 15px 0;">
-  <pre style="margin: 0;"><code>npx instaserve [options]
+  <pre style="margin: 0;"><code># Run with env vars
+AUTH0_DOMAIN=... AUTH0_CLIENT_ID=... npx instaserve [options]
+
+# Generate routes file
 npx instaserve generate-routes</code></pre>
 </div>
 
@@ -237,4 +254,50 @@ export default {
         throw new Error('Test error')
     }
 }
+```
+
+## Library Modules
+
+The `lib/` directory contains useful modules for authentication, storage, and database manipulation.
+
+### Auth0 (`lib/auth0.js`)
+Provides authentication routes and `req.user` handling via Auth0.
+- **Routes:** `GET /login`, `GET /logout`, `GET /callback`
+- **Usage:** Import and spread into your routes.
+  ```javascript
+  import auth0 from './lib/auth0.js';
+  
+  export default {
+    ...auth0,
+    // other routes
+  }
+  ```
+
+### R2 Storage (`lib/r2.js`)
+Utilities for Cloudflare R2 or S3-compatible object storage.
+- **Features:** `uploadToR2`, `downloadFromR2`, `listR2Files`
+- **Routes:** `fileRoutes` exports helpers for file management.
+- **Usage:**
+  ```javascript
+  import { fileRoutes } from './lib/r2.js';
+  
+  export default {
+    ...fileRoutes,
+    // other routes
+  }
+  ```
+
+### SQLite (`lib/sqlite.js`)
+Provides a local SQLite database with a per-user Key-Value store.
+- **Features:** User management table, KV table.
+- **Routes:** `_auth` middleware, CRUD for KV store (`/api`, `/all`).
+- **Usage:**
+  ```javascript
+  import sqliteRoutes from './lib/sqlite.js';
+  
+  export default {
+    ...sqliteRoutes,
+    // other routes
+  }
+  ```
 ```

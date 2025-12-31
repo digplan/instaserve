@@ -1,209 +1,346 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Instaserve</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instaserve App</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
-            --text: #1f2937;
-            --text-light: #6b7280;
-            --bg: #f9fafb;
+            /* HSL Color Palette - Vibrant & Premium */
+            --primary: 220 90% 56%; /* #2563eb */
+            --primary-dark: 220 90% 46%;
+            --bg-color: 220 30% 98%;
+            --card-bg: 0 0% 100%;
+            --text-main: 220 20% 15%;
+            --text-secondary: 220 15% 40%;
+            --success: 150 70% 40%;
+            --radius-md: 16px;
+            --radius-sm: 8px;
+            --shadow-soft: 0 10px 40px -10px rgba(37, 99, 235, 0.15);
+            --shadow-hover: 0 20px 50px -12px rgba(37, 99, 235, 0.25);
         }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: 220 30% 8%;
+                --card-bg: 220 25% 12%;
+                --text-main: 220 30% 95%;
+                --text-secondary: 220 15% 60%;
+                --shadow-soft: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.5;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px 15px;
-            color: var(--text);
-            background: var(--bg);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .orb {
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle at 30% 30%, #60a5fa, var(--primary));
-            border-radius: 50%;
-            margin: 0 auto 10px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        h1 { 
-            color: var(--primary);
-            font-size: 2rem;
-            margin: 0;
-        }
-        .subtitle {
-            color: var(--text-light);
-            font-size: 1rem;
-            margin: 5px 0;
-        }
-        h2 { 
-            color: var(--text);
-            font-size: 1.3rem;
-            margin: 20px 0 10px;
-            padding-bottom: 5px;
-            border-bottom: 2px solid var(--primary);
-        }
-        h3 {
-            color: var(--text);
-            font-size: 1.1rem;
-            margin: 15px 0 8px;
-        }
-        code {
-            background: #f3f4f6;
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-family: 'SF Mono', Menlo, monospace;
-            color: var(--primary-dark);
-        }
-        pre {
-            background: #f3f4f6;
-            padding: 10px;
-            border-radius: 6px;
-            overflow-x: auto;
-            border: 1px solid #e5e7eb;
-            margin: 10px 0;
-            font-size: 0.9rem;
-        }
-        .option {
-            margin: 8px 0;
-            padding-left: 0;
-            position: relative;
+            background-color: hsl(var(--bg-color));
+            color: hsl(var(--text-main));
+            min-height: 100vh;
             display: flex;
-            gap: 8px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+            position: relative;
         }
-        .option:before {
+
+        /* Subtle Background Gradient Orb */
+        .bg-orb {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, hsla(var(--primary), 0.15), transparent 70%);
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+            pointer-events: none;
+            animation: pulse-orb 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-orb {
+            0% { transform: translateX(-50%) scale(0.9); opacity: 0.8; }
+            100% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .auth-card {
+            background: hsl(var(--card-bg));
+            padding: 3rem 2rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(10px);
+            border: 1px solid hsla(var(--primary), 0.1);
+            transform: translateY(0);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+        }
+
+        .auth-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, hsl(var(--primary)), hsl(260 80% 60%));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.03em;
+        }
+
+        p.subtitle {
+            font-size: 1.1rem;
+            color: hsl(var(--text-secondary));
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        /* User Profile State */
+        .profile-view {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid hsl(var(--primary));
+            margin-bottom: 0.5rem;
+            box-shadow: 0 4px 12px hsla(var(--primary), 0.3);
+        }
+
+        .welcome-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            background-color: hsla(var(--success), 0.1);
+            color: hsl(var(--success));
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: currentColor;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background-color: hsl(var(--primary));
+            color: white;
+            box-shadow: 0 4px 12px hsla(var(--primary), 0.4);
+        }
+
+        .btn-primary:hover {
+            background-color: hsl(var(--primary-dark));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px hsla(var(--primary), 0.5);
+        }
+
+        .btn-secondary {
+            background-color: hsla(var(--text-main), 0.05);
+            color: hsl(var(--text-main));
+            margin-top: 1rem;
+        }
+
+        .btn-secondary:hover {
+            background-color: hsla(var(--text-main), 0.1);
+        }
+        
+        /* Loading/Guest State */
+        .guest-view {
             display: none;
+            animation: fadeIn 0.5s ease;
         }
-        .option code {
-            flex-shrink: 0;
-        }
-        ul {
-            padding-left: 15px;
-            margin: 8px 0;
-        }
-        li {
-            margin: 5px 0;
-        }
-        .usage {
-            background: white;
-            padding: 15px;
+        
+        /* Testing Controls Styles */
+        .btn-sm {
+            padding: 6px 12px;
             border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin: 15px 0;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            color: #333;
         }
-        p {
-            margin: 8px 0;
+        .btn-sm:hover {
+            background: #f9fafb;
+            border-color: #ccc;
+        }
+        .section-title { font-size: 1rem; color: hsl(var(--text-main)); font-weight: 600; margin-top: 1.5rem; text-align: left; }
+        .input-field { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 0.5rem; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="orb"></div>
-        <h1>Instaserve</h1>
-        <p class="subtitle">Instant web stack for Node.js</p>
+    <div class="bg-orb"></div>
+    <div class="container">
+        <div class="auth-card">
+            <h1>Instaserve</h1>
+            
+            <!-- Guest View -->
+            <div id="guest-view" class="guest-view">
+                <p class="subtitle">Secure, fast, and instant web stack.<br>Sign in to access your dashboard.</p>
+                <a href="/login" class="btn btn-primary">Sign In with Auth0</a>
+                <div style="margin-top: 1.5rem; font-size: 0.9rem; color: hsl(var(--text-secondary));">
+                    Powered by Node.js & SQLite
+                </div>
+            </div>
+
+            <!-- Profile View -->
+            <div id="profile-view" class="profile-view">
+                <img id="user-pic" src="" alt="Profile Picture" class="profile-pic">
+                <div class="welcome-text">Hi, <span id="user-name">User</span>!</div>
+                <div class="status-badge">Authenticated</div>
+                
+                <!-- Testing Controls -->
+                <div style="width: 100%; text-align: left; margin-top: 0.5rem; border-top: 1px solid hsla(var(--text-main), 0.1); padding-top: 1rem;">
+                    <h3 class="section-title">SQLite KV Store</h3>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <input type="text" id="kv-key" placeholder="Key" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                        <input type="text" id="kv-value" placeholder="Value" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                        <button onclick="api('POST', '/api', { key: val('kv-key'), value: val('kv-value') })" class="btn-sm">Set</button>
+                        <button onclick="api('GET', '/api?key=' + val('kv-key'))" class="btn-sm">Get</button>
+                        <button onclick="api('DELETE', '/api', { key: val('kv-key') })" class="btn-sm">Delete</button>
+                        <button onclick="api('GET', '/all')" class="btn-sm">List All</button>
+                    </div>
+
+                    <h3 class="section-title">R2 Storage</h3>
+                    <div style="margin-top: 0.5rem;">
+                        <input type="text" id="r2-bucket" placeholder="Bucket Name" class="input-field">
+                        <input type="file" id="r2-file" style="margin-bottom: 0.5rem; width: 100%;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button onclick="uploadFile()" class="btn-sm">Upload File</button>
+                            <button onclick="listFiles()" class="btn-sm">List Files</button>
+                        </div>
+                    </div>
+
+                    <div id="output" style="margin-top: 1rem; background: #f3f4f6; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; min-height: 60px; max-height: 200px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; color: #333;">Result output...</div>
+                </div>
+
+                <a href="/logout" class="btn btn-secondary" onclick="localStorage.clear()" style="margin-top: 1.5rem;">Sign Out</a>
+            </div>
+
+        </div>
     </div>
 
-    <div class="usage">
-        <h2>Usage</h2>
-        <pre><code>npx instaserve [options]</code></pre>
-    </div>
+    <script>
+        // Check for user session in localStorage (set by auth0.js callback)
+        document.addEventListener('DOMContentLoaded', () => {
+            const name = localStorage.getItem('name');
+            const pic = localStorage.getItem('pic');
+            
+            if (name) {
+                // User is logged in
+                document.getElementById('profile-view').style.display = 'flex';
+                document.getElementById('user-name').textContent = name;
+                if (pic) {
+                    document.getElementById('user-pic').src = pic;
+                }
+            } else {
+                // User is guest
+                document.getElementById('guest-view').style.display = 'block';
+            }
+        });
 
-    <h2>Options</h2>
-    <div class="option"><code>-port &lt;number&gt;</code> - Port to listen on (default: 3000)</div>
-    <div class="option"><code>-ip &lt;address&gt;</code> - IP address to bind to (default: 127.0.0.1)</div>
-    <div class="option"><code>-public &lt;path&gt;</code> - Public directory path (default: ./public)</div>
-    <div class="option"><code>-api &lt;file&gt;</code> - Path to routes file (default: ./routes.js)</div>
-    <div class="option"><code>-secure</code> - Enable HTTPS (requires cert.pem and key.pem - run ./generate-certs.sh)</div>
-    <div class="option"><code>-help</code> - Show help message</div>
+        const val = (id) => document.getElementById(id).value;
+        const log = (data) => document.getElementById('output').textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
 
-    <h2>HTTPS Support</h2>
-    <p>Instaserve supports HTTPS with self-signed certificates. To enable HTTPS:</p>
-    <ol>
-        <li><strong>Generate certificates:</strong> <code>./generate-certs.sh</code></li>
-        <li><strong>Run with HTTPS:</strong> <code>npx instaserve -secure</code></li>
-    </ol>
-    <p>The certificate generation script creates trusted certificates that won't show browser warnings.</p>
-
-    <h2>Routes</h2>
-    <p>The routes file (<code>routes.js</code> by default) defines your API endpoints. Each route is a function that handles requests to a specific URL path.</p>
-
-    <h3>Basic Route Example</h3>
-    <pre><code>export default {
-    // Handle GET /hello
-    hello: (req, res, data) => {
-        return { message: 'Hello World' }
-    }
-}</code></pre>
-
-    <h3>Special Routes (Middleware)</h3>
-    <p>Routes starting with <code>_</code> are middleware functions that run on <strong>every request</strong> before the main route handler. They are useful for:</p>
-    <ul>
-        <li>Logging requests</li>
-        <li>Authentication</li>
-        <li>Request modification</li>
-        <li>Response headers</li>
-    </ul>
-    <p>Middleware functions can:</p>
-    <ul>
-        <li>Return <code>false</code> to continue to the next middleware or main route</li>
-        <li>Return a truthy value to stop processing and use that as the response</li>
-        <li>Modify the request or response objects</li>
-    </ul>
-
-    <h4>Middleware Example</h4>
-    <pre><code>export default {
-    // Log every request
-    _log: (req, res, data) => {
-        console.log(`${req.method} ${req.url}`)
-        return false // Continue processing
-    },
-
-    // Block unauthorized requests
-    _auth: (req, res, data) => {
-        if (!data.token) {
-            res.writeHead(401)
-            return 'Unauthorized'
+        async function api(method, url, body) {
+            try {
+                const opts = { method };
+                if (body && method !== 'GET') {
+                    opts.headers = { 'Content-Type': 'application/json' };
+                    opts.body = JSON.stringify(body);
+                }
+                const res = await fetch(url, opts);
+                // Try parsing JSON, fallback to text if fail or empty
+                const text = await res.text();
+                try {
+                    log(JSON.parse(text));
+                } catch {
+                    log(text || 'OK');
+                }
+            } catch (e) {
+                log('Error: ' + e.message);
+            }
         }
-        return false // Continue if authorized
-    }
-}</code></pre>
 
-    <h3>Route Parameters</h3>
-    <p>Each route function receives:</p>
-    <ul>
-        <li><code>req</code> - The HTTP request object</li>
-        <li><code>res</code> - The HTTP response object</li>
-        <li><code>data</code> - Combined data from:
-            <ul>
-                <li>POST body (if JSON)</li>
-                <li>URL query parameters</li>
-                <li>Form data</li>
-            </ul>
-        </li>
-    </ul>
+        async function uploadFile() {
+            const bucket = val('r2-bucket');
+            const fileInput = document.getElementById('r2-file');
+            const file = fileInput.files[0];
+            if (!bucket || !file) return log('Please enter a bucket and select a file.');
 
-    <h3>Example Routes File</h3>
-    <pre><code>export default {
-    // Middleware example
-    _debug: (req, res, data) => {
-        console.log('Request:', req.url)
-        return false // Continue to next route
-    },
+            const reader = new FileReader();
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1];
+                await api('POST', '/upload', {
+                    bucket,
+                    key: file.name,
+                    body: base64,
+                    contentType: file.type
+                });
+            };
+            reader.readAsDataURL(file);
+        }
 
-    // API endpoint
-    api: (req, res, data) => {
-        return { status: 'ok', data }
-    },
-
-    // Error handling
-    testerror: () => {
-        throw new Error('Test error')
-    }
-}</code></pre>
+        async function listFiles() {
+            const bucket = val('r2-bucket');
+            if (!bucket) return log('Please enter a bucket.');
+            await api('POST', '/files', { bucket });
+        }
+    </script>
 </body>
 </html>

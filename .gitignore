@@ -3,3 +3,4 @@ cert.pem
 key.pem
 routes.js
 public/
+data.db

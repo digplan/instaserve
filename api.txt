@@ -1,0 +1,61 @@
+Instaserve API Documentation
+
+Authentication
+--------------
+GET /login
+  Redirects to Auth0 for sign-in.
+  Sets a secure http-only session cookie ('token') upon success.
+
+GET /logout
+  Logs the user out and clears the session.
+
+Key-Value Store (SQLite)
+------------------------
+* All endpoints require authentication.
+* Data is isolated per user.
+
+POST /api
+  Set a key-value pair.
+  Body (JSON): { "key": "myKey", "value": "myValue" }
+  Returns: { "key": "myKey", "value": "myValue" }
+
+GET /api?key=myKey
+  Retrieve a value by key.
+  Returns: { "key": "myKey", "value": "myValue" }
+
+GET /all
+  List all key-value pairs for the current user.
+  Returns: [ { "key": "key1", "value": "val1" }, ... ]
+
+DELETE /api
+  Delete a key.
+  Body (JSON): { "key": "myKey" }
+  Returns: { "deleted": true, "key": "myKey" }
+
+Storage (R2 / S3)
+-----------------
+* Requires R2 environment variables to be set on the server.
+* Uses the credentials provided in endpoints or server defaults.
+
+POST /upload
+  Upload a file.
+  Body (JSON):
+  {
+    "bucket": "my-bucket-name",
+    "key": "filename.jpg",
+    "body": "base64_encoded_string_contents",
+    "contentType": "image/jpeg"
+  }
+
+POST /files
+  List files in a bucket.
+  Body (JSON): { "bucket": "my-bucket-name" }
+  Returns: List of file objects (key, size, lastModified).
+
+GET /download?bucket=my-bucket-name&key=filename.jpg
+  Download a file directly.
+  (Available via the 'download' route handler)
+
+GET /delete?bucket=my-bucket-name&key=filename.jpg
+  Delete a file.
+  (Available via the 'delete' route handler)

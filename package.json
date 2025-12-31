@@ -1,11 +1,12 @@
 {
   "name": "instaserve",
-  "version": "1.1.9",
+  "version": "1.1.14",
   "description": "Instant web stack",
   "main": "module.mjs",
   "bin": "./instaserve",
   "scripts": {
-    "start": "node instaserve"
+    "start": "node instaserve",
+    "test": "./test_api.sh"
   },
   "type": "module",
   "dependencies": {
