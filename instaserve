@@ -6,6 +6,13 @@ import path from 'node:path'
 import { pathToFileURL, fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
 
+if (process.argv.includes('-v') || process.argv.includes('--version')) {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url))
+  const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf-8'))
+  console.log(packageJson.version)
+  process.exit(0)
+}
+
 console.log(chalk.cyan('\nInstaserve - Instant Web Stack\n'))
 console.log(chalk.yellow('Usage:'))
 console.log(chalk.green('  npx instaserve [options]'))
@@ -19,11 +26,14 @@ console.log(chalk.green('  -ip <address>') + '     IP address to bind to (defaul
 console.log(chalk.green('  -public <path>') + '    Public directory path (default: ./public)')
 console.log(chalk.green('  -api <file>') + '       Path to routes file (default: ./routes.js)')
 console.log(chalk.green('  -secure') + '           Enable HTTPS (requires cert.pem and key.pem: run "npx instaserve generate-certs")')
+console.log(chalk.green('  -v') + '                Show version number')
 console.log(chalk.green('  -help') + '             Show this help message\n')
 
 if (process.argv.includes('-help')) {
   process.exit(0)
 }
+
+
 
 const args = process.argv.slice(2)
 

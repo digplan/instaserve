@@ -41,7 +41,7 @@ POST /upload
   Upload a file.
   Body (JSON):
   {
-    "bucket": "my-bucket-name",
+    "bucket": "my-bucket-name", // Optional if env var set
     "key": "filename.jpg",
     "body": "base64_encoded_string_contents",
     "contentType": "image/jpeg"
@@ -49,13 +49,13 @@ POST /upload
 
 POST /files
   List files in a bucket.
-  Body (JSON): { "bucket": "my-bucket-name" }
+  Body (JSON): { "bucket": "my-bucket-name" } // Bucket optional if env var set
   Returns: List of file objects (key, size, lastModified).
 
 GET /download?bucket=my-bucket-name&key=filename.jpg
-  Download a file directly.
+  Download a file directly. Bucket optional if env var set.
   (Available via the 'download' route handler)
 
 GET /delete?bucket=my-bucket-name&key=filename.jpg
-  Delete a file.
+  Delete a file. Bucket optional if env var set.
   (Available via the 'delete' route handler)

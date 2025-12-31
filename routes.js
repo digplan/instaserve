@@ -1,57 +1,25 @@
+import auth0 from "./lib/auth0.js";
+import { fileRoutes } from "./lib/r2.js";
+import sqlite from "./lib/sqlite.js";
+
 export default {
-  // Middleware functions (prefixed with _) run on every request
-  // Return false to continue processing, or a value to use as response
-
-  // Example: Log all requests
-  _log: (req, res, data) => {
-    console.log(`${req.method} ${req.url}`)
-    return false // Continue to next middleware or route
+  _log: (req, res) => {
+    console.log(req.method, req.url);
   },
+  _cors: (req, res) => {
+    const origin = req.headers.origin;
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie, X-Requested-With');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
 
-  // Example: Basic authentication (commented out)
-  // _auth: (req, res, data) => {
-  //     if (!data.token) {
-  //         res.writeHead(401)
-  //         return 'Unauthorized'
-  //     }
-  //     return false // Continue if authorized
-  // },
-
-  // Regular route handlers
-  hello: async (req, res, data) => {
-    await new Promise(r => setTimeout(r, 2000));
-    res.setHeader('some', 'head')
-    return { message: 'Hello World' }
+    if (req.method === 'OPTIONS') {
+      return 204;
+    }
   },
-
-  api: (req, res, data) => {
-    return { message: 'API endpoint', data }
-  },
-
-  example429: (req, res, data) => {
-    return 429; // This will return a status code 429
-  },
-
-  "POST /examplepost": (req, res, data) => {
-    return { message: 'Example POST endpoint', data }
-  },
-
-  "GET /sse": (req, res, data) => {
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive'
-    })
-    var x = 3;
-    const interval = setInterval(() => {
-      if (x <= 0) {
-        clearInterval(interval)
-        res.end()
-        return
-      }
-      res.write(`data: Hello World ${x}\n\n`)
-      x--
-    }, 1000)
-    return "SSE"
-  },
-}
+  ...auth0,
+  ...fileRoutes,
+  ...sqlite
+};
