@@ -4,19 +4,21 @@ import chalk from 'chalk'
 import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL, fileURLToPath } from 'node:url'
+import { execSync } from 'node:child_process'
 
 console.log(chalk.cyan('\nInstaserve - Instant Web Stack\n'))
 console.log(chalk.yellow('Usage:'))
 console.log(chalk.green('  npx instaserve [options]'))
 console.log(chalk.green('  npx instaserve generate-routes\n'))
 console.log(chalk.yellow('Commands:'))
-console.log(chalk.green('  generate-routes') + '   Create a sample routes.js file in the current directory\n')
+console.log(chalk.green('  generate-routes') + '   Create a sample routes.js file in the current directory')
+console.log(chalk.green('  generate-certs') + '    Generate self-signed SSL certificates\n')
 console.log(chalk.yellow('Options:'))
 console.log(chalk.green('  -port <number>') + '    Port to listen on (default: 3000)')
 console.log(chalk.green('  -ip <address>') + '     IP address to bind to (default: 127.0.0.1)')
 console.log(chalk.green('  -public <path>') + '    Public directory path (default: ./public)')
 console.log(chalk.green('  -api <file>') + '       Path to routes file (default: ./routes.js)')
-console.log(chalk.green('  -secure') + '           Enable HTTPS (requires cert.pem and key.pem: run generate-certs.sh)')
+console.log(chalk.green('  -secure') + '           Enable HTTPS (requires cert.pem and key.pem: run "npx instaserve generate-certs")')
 console.log(chalk.green('  -help') + '             Show this help message\n')
 
 if (process.argv.includes('-help')) {
@@ -76,16 +78,127 @@ if (args[0] === 'generate-routes') {
   console.log(chalk.green(`✓ Created routes.js`))
 
   const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+  // Copy routes-full.js
+  const sourceRoutesFull = path.join(__dirname, 'routes-full.js')
+  if (fs.existsSync(sourceRoutesFull)) {
+    const destRoutesFull = path.join(process.cwd(), 'routes-full.js')
+    if (!fs.existsSync(destRoutesFull)) {
+      fs.copyFileSync(sourceRoutesFull, destRoutesFull)
+      console.log(chalk.green(`✓ Created routes-full.js`))
+    }
+  }
+
   const sourceLib = path.join(__dirname, 'lib')
 
   if (fs.existsSync(sourceLib)) {
     const destLib = path.join(process.cwd(), 'lib')
-    if (!fs.existsSync(destLib)) {
+    try {
       fs.cpSync(sourceLib, destLib, { recursive: true })
-      console.log(chalk.green(`✓ Created lib/`))
-    } else {
-      console.log(chalk.yellow(`! lib/ directory already exists, skipping copy`))
+      console.log(chalk.green(`✓ Created/Updated lib/`))
+    } catch (e) {
+      console.error(chalk.red(`! Failed to copy lib/: ${e.message}`))
     }
+  }
+
+  const sourcePublic = path.join(__dirname, 'public')
+
+  if (fs.existsSync(sourcePublic)) {
+    const destPublic = path.join(process.cwd(), 'public')
+    try {
+      fs.cpSync(sourcePublic, destPublic, { recursive: true })
+      console.log(chalk.green(`✓ Created/Updated public/`))
+    } catch (e) {
+      console.error(chalk.red(`! Failed to copy public/: ${e.message}`))
+    }
+  }
+
+  process.exit(0)
+}
+
+// Handle generate-certs command
+if (args[0] === 'generate-certs') {
+  console.log(chalk.cyan('Generating self-signed certificates for Instaserve...'))
+
+  const openSslConfig = `[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+C = US
+ST = State
+L = City
+O = Instaserve
+OU = Development
+CN = localhost
+
+[v3_req]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = localhost
+DNS.2 = *.localhost
+IP.1 = 127.0.0.1
+IP.2 = ::1
+`
+
+  try {
+    fs.writeFileSync('openssl.conf', openSslConfig)
+
+    // Generate private key
+    try {
+      execSync('openssl genrsa -out key.pem 2048', { stdio: 'inherit' })
+    } catch (e) {
+      console.error(chalk.red('Error running openssl genrsa. Ensure openssl is installed.'))
+      throw e
+    }
+
+    // Generate certificate
+    try {
+      execSync('openssl req -new -x509 -key key.pem -out cert.pem -days 365 -config openssl.conf -extensions v3_req', { stdio: 'inherit' })
+    } catch (e) {
+      console.error(chalk.red('Error running openssl req.'))
+      throw e
+    }
+
+    // Cleanup
+    if (fs.existsSync('openssl.conf')) fs.unlinkSync('openssl.conf')
+
+    console.log(chalk.green('Certificates generated: cert.pem and key.pem'))
+
+    // Add to trust store
+    if (process.platform === 'darwin') {
+      console.log(chalk.yellow('Adding certificate to macOS trust store...'))
+      try {
+        execSync('sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain cert.pem', { stdio: 'inherit' })
+        console.log(chalk.green('Certificate added to macOS trust store'))
+      } catch (e) {
+        console.log(chalk.red('Failed to add to trust store (sudo skipped or failed). You can add it manually.'))
+      }
+    } else if (process.platform === 'linux') {
+      console.log(chalk.yellow('Adding certificate to Linux trust store...'))
+      try {
+        execSync('sudo cp cert.pem /usr/local/share/ca-certificates/instaserve.crt', { stdio: 'inherit' })
+        execSync('sudo update-ca-certificates', { stdio: 'inherit' })
+        console.log(chalk.green('Certificate added to Linux trust store'))
+      } catch (e) {
+        console.log(chalk.red('Failed to add to trust store. Manual addition required.'))
+      }
+    } else {
+      console.log(chalk.yellow("Please manually add cert.pem to your system's trust store"))
+    }
+
+    console.log(chalk.green("HTTPS certificates ready! Use 'npx instaserve -secure' to enable HTTPS"))
+
+  } catch (error) {
+    console.error(chalk.red('Error generating certificates:'), error.message)
+    // Cleanup if failed
+    if (fs.existsSync('openssl.conf')) fs.unlinkSync('openssl.conf')
+    process.exit(1)
   }
 
   process.exit(0)
