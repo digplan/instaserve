@@ -197,7 +197,6 @@ class FileWidget extends HTMLElement {
     }
   }
 }
-
 customElements.define("file-widget", FileWidget);
 
 
@@ -232,6 +231,7 @@ class KVWidget extends HTMLElement {
     this.querySelector('#btn-list').onclick = async () => log(await window.all());
   }
 }
+customElements.define("kv-widget", KVWidget);
 
 class SSEWidget extends HTMLElement {
   async connectedCallback() {
@@ -263,5 +263,3 @@ class SSEWidget extends HTMLElement {
   }
 }
 customElements.define('sse-widget', SSEWidget);
-
-customElements.define("kv-widget", KVWidget);
