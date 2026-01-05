@@ -1,15 +1,11 @@
 {
-  "name": "instaserve",
-  "version": "1.1.22",
-  "description": "Instant web stack",
-  "main": "module.mjs",
-  "bin": "./instaserve",
-  "scripts": {
-    "start": "node instaserve -api ./routes-full.js -secure -port 3001 -public ./public",
-    "test": "./test_api.sh"
-  },
+  "name": "instabun",
+  "version": "0.1.0",
+  "description": "Minimal Bun server with SQLite and R2",
+  "main": "server.js",
   "type": "module",
-  "dependencies": {
-    "chalk": "^5.6.2"
+  "scripts": {
+    "start": "bun server.js",
+    "test": "bun test.js"
   }
 }
